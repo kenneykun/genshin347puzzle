@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三光 · 世界式</title>
+<meta name="description" content="三光与十四节点的视觉合成：两死，一生，紫为深渊。">
+<style>
+  :root{
+    --bg:#03050a;
+    --ink:#e8edf4;
+    --muted:#7e8a99;
+    --dim:#4b5766;
+    --gold:#e8c97a;
+    --cyan:#6fe3ff;
+    --purple:#a855f7;
+    --line:rgba(170,196,224,.13);
+    --serif:"STSong","Songti SC","Noto Serif CJK SC",Georgia,serif;
+    --mono:"Cascadia Code",Consolas,"SFMono-Regular",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:
+      radial-gradient(ellipse at 19% 28%, rgba(86,52,132,.20), transparent 48%),
+      radial-gradient(ellipse at 82% 68%, rgba(21,76,88,.14), transparent 48%),
+      radial-gradient(ellipse at 52% 8%, rgba(30,50,88,.16), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.42;
+    background-image:
+      radial-gradient(1px 1px at 18% 24%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1px 1px at 72% 18%, rgba(200,225,255,.55), transparent),
+      radial-gradient(1px 1px at 84% 72%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 30% 80%, rgba(180,210,255,.45), transparent),
+      radial-gradient(1px 1px at 58% 55%, rgba(255,255,255,.35), transparent);
+    background-size:420px 380px,570px 450px,620px 520px,760px 600px,900px 700px;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 50% 45%, transparent 40%, rgba(0,0,0,.52) 100%);
+  }
+  .page{
+    position:relative;z-index:1;
+    max-width:1500px;margin:0 auto;padding:30px 38px 8px;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+  header{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:28px;
+    padding-bottom:20px;
+  }
+  .kicker{
+    font-size:8px;letter-spacing:.24em;color:var(--cyan);opacity:.7;
+    text-transform:uppercase;margin-bottom:8px;
+  }
+  h1{
+    margin:0;font-family:var(--serif);font-weight:500;
+    font-size:clamp(38px,4.5vw,64px);line-height:1;letter-spacing:.05em;
+    text-shadow:0 0 45px rgba(143,232,255,.10);
+  }
+  h1 em{font-style:normal;color:var(--gold);padding:0 .12em}
+  .sub{
+    margin:0 0 4px;color:var(--muted);font-size:10px;letter-spacing:.12em;
+    white-space:nowrap;
+  }
+  .poster{
+    flex:1;min-height:0;
+    display:grid;grid-template-columns:1.08fr .92fr;gap:34px;
+    height:calc(100vh - 230px);min-height:560px;max-height:820px;
+  }
+  .figure{
+    display:flex;flex-direction:column;min-width:0;min-height:0;
+    border-top:1px solid var(--line);padding-top:11px;
+  }
+  .figure.tree{
+    border-left:1px solid var(--line);padding-left:34px;
+  }
+  .fig-head,.fig-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-size:8px;letter-spacing:.12em;color:var(--dim);
+    text-transform:uppercase;flex:none;
+  }
+  .fig-head b{font-weight:500;color:var(--muted)}
+  .fig-head span:last-child{color:var(--dim)}
+  .fig-foot{
+    padding-top:8px;color:var(--muted);font-size:7.5px;
+  }
+  .fig-foot span{white-space:nowrap}
+  .fig-foot .live{color:var(--purple);opacity:.85}
+  .canvas-wrap,.svg-wrap{
+    flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+    padding:4px 0;
+  }
+  #moons{
+    display:block;width:100%;height:100%;object-fit:contain;
+    max-height:100%;
+  }
+  .svg-wrap svg{
+    display:block;width:100%;height:100%;max-height:100%;
+  }
+  .tree-num{
+    font-family:var(--mono);font-size:7px;fill:rgba(126,138,153,.75);
+    letter-spacing:.05em;
+  }
+  .tree-label{
+    font-family:var(--serif);font-size:10px;font-weight:600;
+    text-anchor:middle;dominant-baseline:middle;
+  }
+  .tree-count{
+    font-family:var(--mono);font-size:8px;fill:rgba(126,138,153,.8);
+    letter-spacing:.12em;
+  }
+  .tree-dim{opacity:.55}
+  footer{
+    flex:none;display:flex;align-items:center;justify-content:space-between;gap:18px;
+    margin-top:10px;padding-top:11px;border-top:1px solid var(--line);
+    font-size:8px;letter-spacing:.12em;color:var(--dim);
+  }
+  footer .eq{display:flex;gap:26px;color:var(--muted)}
+  footer .eq b{font-weight:500;color:var(--gold)}
+  footer .eq i{font-style:normal;color:var(--purple)}
+  footer .mark{color:rgba(126,138,153,.55);font-size:7px}
+  @media (max-width:1000px){
+    .poster{grid-template-columns:1fr;height:auto;max-height:none;gap:22px}
+    .figure{height:auto}
+    .figure.tree{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:11px}
+    .canvas-wrap{height:min(78vw,660px)}
+    .svg-wrap{height:auto}
+    .svg-wrap svg{width:100%;height:auto;max-height:none}
+    .tree{margin-top:0}
+    footer{flex-wrap:wrap;gap:9px}
+    .sub{white-space:normal;text-align:right}
+  }
+  @media (max-width:640px){
+    .page{padding:18px 16px 14px}
+    header{align-items:flex-start;flex-direction:column;gap:12px;padding-bottom:14px}
+    h1{font-size:42px}
+    .sub{text-align:left;font-size:9px}
+    .poster{gap:16px}
+    .canvas-wrap{height:min(94vw,560px)}
+    .svg-wrap{height:auto}
+    .fig-head,.fig-foot{font-size:7px}
+    .fig-foot{gap:6px;flex-wrap:wrap}
+    footer .eq{gap:14px}
+    footer .mark{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <div class="kicker">Three moons · World formula</div>
+      <h1>三光<em>·</em>世界式</h1>
+    </div>
+    <p class="sub">两死，一生。紫是深渊。</p>
+  </header>
+
+  <main class="poster">
+    <section class="figure">
+      <div class="fig-head"><b>01 / 三光</b><span>7 light + 4 shadow</span></div>
+      <div class="canvas-wrap"><canvas id="moons" width="900" height="900" aria-label="三光与七元节点"></canvas></div>
+      <div class="fig-foot">
+        <span>两环 · 死</span>
+        <span class="live">一环 · 生 / Abyss</span>
+        <span>雷 · 暗心</span>
+      </div>
+    </section>
+
+    <section class="figure tree">
+      <div class="fig-head"><b>02 / 世界式</b><span>14 nodes</span></div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 520 820" role="img" aria-label="世界式十四节点">
+          <defs>
+            <radialGradient id="goldHalo" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#e8c97a" stop-opacity=".22"/>
+              <stop offset="1" stop-color="#e8c97a" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <g fill="none" stroke-linecap="round">
+            <!-- 11-direction halo -->
+            <circle cx="260" cy="390" r="210" stroke="rgba(190,215,255,.075)" stroke-width=".8"/>
+            <g stroke="rgba(200,220,255,.12)" stroke-width=".8">
+              <line x1="260.0" y1="192.0" x2="260.0" y2="180.0"/>
+              <line x1="367.0" y1="223.4" x2="373.5" y2="213.3"/>
+              <line x1="440.1" y1="307.7" x2="451.0" y2="302.8"/>
+              <line x1="456.0" y1="418.2" x2="467.9" y2="419.9"/>
+              <line x1="409.6" y1="519.7" x2="418.7" y2="527.5"/>
+              <line x1="315.8" y1="580.0" x2="319.2" y2="591.5"/>
+              <line x1="204.2" y1="580.0" x2="200.8" y2="591.5"/>
+              <line x1="110.4" y1="519.7" x2="101.3" y2="527.5"/>
+              <line x1="64.0" y1="418.2" x2="52.1" y2="419.9"/>
+              <line x1="79.9" y1="307.7" x2="69.0" y2="302.8"/>
+              <line x1="153.0" y1="223.4" x2="146.5" y2="213.3"/>
+            </g>
+            <path d="M260 140 L260 390 L260 620" stroke="#e8c97a" stroke-opacity=".50" stroke-width="1.2"/>
+            <path d="M260 240 L260 697" stroke="#a78bfa" stroke-opacity=".22" stroke-width=".9" stroke-dasharray="3 5"/>
+            <path d="M160 185 L193 581" stroke="#7ee2a8" stroke-opacity=".20" stroke-width=".9"/>
+            <path d="M360 185 L327 581" stroke="#f2d184" stroke-opacity=".20" stroke-width=".9"/>
+            <path d="M330 390 Q430 432 380 500" stroke="#ff8fc7" stroke-opacity=".35" stroke-width=".9" stroke-dasharray="2 5"/>
+            <path d="M260 245 L260 265" stroke="#6fe3ff" stroke-opacity=".45" stroke-width=".9"/>
+            <circle cx="327" cy="581" r="133" stroke="rgba(94,234,212,.10)" stroke-width=".8"/>
+            <circle cx="260" cy="697" r="133" stroke="rgba(251,191,36,.09)" stroke-width=".8"/>
+            <circle cx="193" cy="581" r="133" stroke="rgba(134,239,172,.08)" stroke-width=".8"/>
+          </g>
+
+          <!-- four shades -->
+          <g>
+            <circle cx="260" cy="140" r="17" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1.1"/>
+            <text x="260" y="141" class="tree-label" fill="#ff9a9a">死</text>
+            <text x="260" y="112" class="tree-num" text-anchor="middle">11</text>
+
+            <circle cx="160" cy="185" r="17" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1.1"/>
+            <text x="160" y="186" class="tree-label" fill="#9fe8bd">生</text>
+            <text x="160" y="157" class="tree-num" text-anchor="middle">12</text>
+
+            <circle cx="360" cy="185" r="17" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1.1"/>
+            <text x="360" y="186" class="tree-label" fill="#f2d184">时</text>
+            <text x="360" y="157" class="tree-num" text-anchor="middle">14</text>
+
+            <circle cx="260" cy="240" r="15" fill="none" stroke="rgba(248,250,255,.54)" stroke-width="1"/>
+            <text x="260" y="241" class="tree-label" fill="#b9a6ff">空</text>
+            <text x="288" y="244" class="tree-num">10</text>
+          </g>
+
+          <!-- interface -->
+          <circle cx="260" cy="390" r="58" fill="url(#goldHalo)"/>
+          <circle cx="260" cy="390" r="31" fill="none" stroke="rgba(248,250,255,.82)" stroke-width="1.2"/>
+          <text x="260" y="391" class="tree-label" fill="#f4e4b7" style="font-size:14px">理</text>
+          <text x="260" y="350" class="tree-num" text-anchor="middle">01</text>
+
+          <!-- twins -->
+          <circle cx="260" cy="270" r="6" fill="none" stroke="rgba(248,250,255,.62)" stroke-width="1"/>
+          <text x="274" y="273" class="tree-num" fill="#6fe3ff">02</text>
+          <circle cx="380" cy="500" r="6" fill="none" stroke="rgba(248,250,255,.62)" stroke-width="1"/>
+          <text x="394" y="503" class="tree-num" fill="#ff8fc7">13</text>
+
+          <!-- seven light -->
+          <g>
+            <circle cx="193" cy="581" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="327" cy="581" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="260" cy="697" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="127" cy="697" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="393" cy="697" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="260" cy="774" r="10" fill="none" stroke="rgba(248,250,255,.58)" stroke-width="1"/>
+            <circle cx="260" cy="620" r="18" fill="none" stroke="rgba(248,250,255,.72)" stroke-width="1.1"/>
+            <text x="260" y="621" class="tree-label" fill="#b9a6ff" style="font-size:9px">雷</text>
+          </g>
+
+          <!-- element indices -->
+          <g class="tree-num">
+            <text x="278" y="625" fill="rgba(185,166,255,.75)">03</text>
+            <text x="342" y="584" fill="rgba(94,234,212,.72)">04</text>
+            <text x="406" y="700" fill="rgba(165,243,252,.72)">05</text>
+            <text x="106" y="700" fill="rgba(96,165,250,.72)">06</text>
+            <text x="272" y="790" fill="rgba(251,146,60,.72)">07</text>
+            <text x="168" y="584" fill="rgba(134,239,172,.72)">08</text>
+            <text x="272" y="700" fill="rgba(251,191,36,.72)">09</text>
+          </g>
+
+          <!-- counts -->
+          <text x="34" y="118" class="tree-count">4 影</text>
+          <text x="34" y="390" class="tree-count">1 理</text>
+          <text x="34" y="674" class="tree-count">7 光</text>
+          <text x="450" y="466" class="tree-count" text-anchor="end">2 界间</text>
+          <text x="450" y="790" class="tree-count" text-anchor="end" opacity=".5">14</text>
+        </svg>
+      </div>
+      <div class="fig-foot">
+        <span>4 影</span>
+        <span>1 理</span>
+        <span>7 光</span>
+        <span>2 界间</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="eq">
+      <span>7 + 4 = <b>11</b></span>
+      <span>11 + 1 + 2 = <b>14</b></span>
+      <span><i>紫</i> = 深渊</span>
+    </div>
+    <div class="mark">THREE MOONS / ONE PRISM</div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('moons');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 900;
+  const CX = 450, CY = 450, S = 44;
+  const RHO = 6.062177826;
+
+  const RING_A = {
+    center: [3.03, -1.75],
+    stops: [[60, '#a5f3fc'], [120, '#fbbf24'], [180, '#86efac'], [240, '#fb923c']]
+  };
+  const RING_B = {
+    center: [0, 3.5],
+    stops: [[0, '#a5f3fc'], [180, '#60a5fa'], [240, '#86efac'], [300, '#5eead4']]
+  };
+  const RING_C = {
+    center: [-3.03, -1.75],
+    stops: [[0, '#5eead4'], [60, '#fbbf24'], [120, '#60a5fa'], [180, '#7c3aed'], [240, '#c026d3'], [300, '#fb923c'], [330, '#a855f7']]
+  };
+
+  const NODES = [
+    { name: '冰', x: 6.06, z: 3.5, color: '#a5f3fc', dx: 0, dy: -40, align: 'center' },
+    { name: '水', x: -6.06, z: 3.5, color: '#60a5fa', dx: 0, dy: -40, align: 'center' },
+    { name: '火', x: 0, z: -7.0, color: '#fb923c', dx: 0, dy: 42, align: 'center' },
+    { name: '草', x: -3.03, z: -1.75, color: '#86efac', dx: -32, dy: -4, align: 'right' },
+    { name: '风', x: 3.03, z: -1.75, color: '#5eead4', dx: 32, dy: -4, align: 'left' },
+    { name: '岩', x: 0, z: 3.5, color: '#fbbf24', dx: 0, dy: -40, align: 'center' },
+    { name: '雷', x: 0, z: 0, color: '#a78bfa', dx: 0, dy: 0, align: 'center' }
+  ];
+
+  const map = (x, z) => [CX + x * S, CY - z * S];
+
+  function hexToRgb(hex) {
+    return [parseInt(hex.slice(1, 3), 16) / 255, parseInt(hex.slice(3, 5), 16) / 255, parseInt(hex.slice(5, 7), 16) / 255];
+  }
+  function rgbToHsl(r, g, b) {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    return [h, s, l];
+  }
+  function hslToRgb(h, s, l) {
+    if (s === 0) return [l, l, l];
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const f = t => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    return [f(h + 1 / 3), f(h), f(h - 1 / 3)];
+  }
+  function colorAt(stops, deg) {
+    const list = stops.map(([a, hex]) => ({ a, hsl: rgbToHsl(...hexToRgb(hex)) })).sort((a, b) => a.a - b.a);
+    let d = ((deg % 360) + 360) % 360;
+    if (d < list[0].a) d += 360;
+    for (let i = 0; i < list.length; i++) {
+      const a0 = list[i].a;
+      const a1 = i === list.length - 1 ? list[0].a + 360 : list[i + 1].a;
+      if (d >= a0 && d <= a1) {
+        const t = (d - a0) / (a1 - a0);
+        const h0 = list[i].hsl[0], h1 = list[(i + 1) % list.length].hsl[0];
+        let dh = h1 - h0;
+        if (dh > 0.5) dh -= 1;
+        if (dh < -0.5) dh += 1;
+        const h = (h0 + dh * t + 1) % 1;
+        const s = list[i].hsl[1] + (list[(i + 1) % list.length].hsl[1] - list[i].hsl[1]) * t;
+        const l = list[i].hsl[2] + (list[(i + 1) % list.length].hsl[2] - list[i].hsl[2]) * t;
+        const [r, g, b] = hslToRgb(h, s, l);
+        return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`;
+      }
+    }
+    const [r, g, b] = hslToRgb(...list[0].hsl);
+    return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`;
+  }
+
+  function drawRing(ring, width, alpha, glow) {
+    const [ccx, ccy] = map(ring.center[0], ring.center[1]);
+    const radius = RHO * S;
+    ctx.save();
+    ctx.lineCap = 'butt';
+    for (let step = 0; step < 360; step += 0.75) {
+      const a0 = step * Math.PI / 180;
+      const a1 = (step + 0.8) * Math.PI / 180;
+      // screen y is flipped relative to world z: canvas angle = −world angle
+      const worldDeg = (360 - step) % 360;
+      ctx.strokeStyle = colorAt(ring.stops, worldDeg);
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.arc(ccx, ccy, radius, a0, a1);
+      ctx.stroke();
+      if (glow) {
+        ctx.globalAlpha = alpha * 0.09;
+        ctx.lineWidth = width * 2.6;
+        ctx.beginPath();
+        ctx.arc(ccx, ccy, radius, a0, a1);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = SIZE * dpr;
+    canvas.height = SIZE * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    // soft abyss halo: 雷 is a dark violet core, not a triangle
+    const halo = ctx.createRadialGradient(450, 450, 0, 450, 450, 96);
+    halo.addColorStop(0, 'rgba(92,50,140,.20)');
+    halo.addColorStop(0.5, 'rgba(60,30,100,.07)');
+    halo.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(450, 450, 96, 0, Math.PI * 2);
+    ctx.fillStyle = halo;
+    ctx.fill();
+
+    // two dead moons, dim
+    drawRing(RING_A, 18, 0.22, false);
+    drawRing(RING_B, 18, 0.16, false);
+
+    // the living moon, bright with abyss violet
+    drawRing(RING_C, 28, 0.98, true);
+
+    // nodes: no colored markers; white circles frame the intersections
+    NODES.forEach(node => {
+      const [x, y] = map(node.x, node.z);
+      const isThunder = node.name === '雷';
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(248,250,255,.86)';
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = 'rgba(255,255,255,.30)';
+      ctx.shadowBlur = 7;
+      ctx.beginPath();
+      ctx.arc(x, y, isThunder ? 23 : 17, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      if (isThunder) {
+        ctx.save();
+        ctx.font = '600 26px "STSong","Songti SC",serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'rgba(3,5,10,.9)';
+        ctx.strokeText('雷', 450, 450);
+        ctx.fillStyle = '#b9a6ff';
+        ctx.fillText('雷', 450, 450);
+        ctx.restore();
+        return;
+      }
+
+      ctx.save();
+      ctx.font = '600 29px "STSong","Songti SC",serif';
+      ctx.textAlign = node.align;
+      ctx.textBaseline = 'middle';
+      const lx = x + node.dx;
+      const ly = y + node.dy;
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(3,5,10,.88)';
+      ctx.strokeText(node.name, lx, ly);
+      ctx.fillStyle = node.color;
+      ctx.fillText(node.name, lx, ly);
+      ctx.restore();
+    });
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>

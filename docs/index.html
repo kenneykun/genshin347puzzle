@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三光 · 世界式 — A Visual Essay</title>
+<meta name="description" content="三月亮、深渊侵蚀与提瓦特 4-1-7 世界式的实时视觉笔记。Three.js 光锥与 HTML 3D 十四节点。">
+<meta name="theme-color" content="#03050a">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="kenneykun">
+<link rel="canonical" href="https://kenneykun.github.io/genshin347puzzle/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="三光 · 世界式">
+<meta property="og:url" content="https://kenneykun.github.io/genshin347puzzle/">
+<meta property="og:title" content="三光 · 世界式">
+<meta property="og:description" content="两死，一生。紫是深渊。Three.js 光锥 × HTML 3D 世界式。">
+<meta property="og:image" content="https://kenneykun.github.io/genshin347puzzle/world_formula_live_preview.png">
+<meta property="og:image:alt" content="三光 · 世界式 — Three.js 光锥与 HTML 3D 世界式">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="1000">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="三光 · 世界式">
+<meta name="twitter:description" content="两死，一生。紫是深渊。Three.js 光锥 × HTML 3D 世界式。">
+<meta name="twitter:image" content="https://kenneykun.github.io/genshin347puzzle/world_formula_live_preview.png">
+<style>
+  :root{
+    --bg:#03050a;
+    --ink:#e8edf4;
+    --muted:#7e8a99;
+    --dim:#4b5766;
+    --gold:#e8c97a;
+    --cyan:#6fe3ff;
+    --purple:#a855f7;
+    --line:rgba(170,196,224,.13);
+    --serif:"STSong","Songti SC","Noto Serif CJK SC",Georgia,serif;
+    --mono:"Cascadia Code",Consolas,"SFMono-Regular",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:
+      radial-gradient(ellipse at 18% 26%, rgba(86,52,132,.20), transparent 48%),
+      radial-gradient(ellipse at 82% 72%, rgba(21,76,88,.13), transparent 48%),
+      var(--bg);
+    color:var(--ink);font-family:var(--mono);overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.38;
+    background-image:
+      radial-gradient(1px 1px at 18% 24%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1px 1px at 72% 18%, rgba(200,225,255,.55), transparent),
+      radial-gradient(1px 1px at 84% 72%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 30% 80%, rgba(180,210,255,.45), transparent);
+    background-size:420px 380px,570px 450px,620px 520px,760px 600px;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 50% 45%, transparent 40%, rgba(0,0,0,.48) 100%);
+  }
+  .skip{
+    position:absolute;left:-999px;top:0;z-index:99;background:var(--gold);color:#0a0d12;
+    padding:9px 12px;font-size:10px;text-decoration:none;
+  }
+  .skip:focus{left:12px;top:12px}
+  .page{
+    position:relative;z-index:1;max-width:1500px;margin:0 auto;
+    padding:30px 38px 8px;min-height:100vh;display:flex;flex-direction:column;
+  }
+  header{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:28px;
+    padding-bottom:18px;
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand-mark{width:30px;height:30px;flex:none;opacity:.9}
+  .kicker{font-size:8px;letter-spacing:.24em;color:var(--cyan);opacity:.7;text-transform:uppercase;margin-bottom:8px}
+  h1{margin:0;font-family:var(--serif);font-weight:500;font-size:clamp(38px,4.5vw,64px);line-height:1;letter-spacing:.05em}
+  h1 em{font-style:normal;color:var(--gold);padding:0 .12em}
+  .lede{margin:11px 0 0;max-width:520px;color:var(--muted);font-size:9.5px;line-height:1.8;letter-spacing:.03em}
+  nav{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:flex-end;padding-bottom:4px}
+  nav a{
+    color:var(--dim);text-decoration:none;font-size:8px;letter-spacing:.12em;
+    padding-bottom:3px;border-bottom:1px solid transparent;white-space:nowrap;
+    transition:color .2s,border-color .2s;
+  }
+  nav a:hover,nav a.active{color:var(--cyan);border-bottom-color:rgba(111,227,255,.45)}
+  .poster.focus-world{grid-template-columns:1fr}
+  .poster.focus-world > .figure:not(.tree){display:none}
+  .poster.focus-world > .figure.tree{border-left:0;padding-left:0}
+  .poster.focus-prism{grid-template-columns:1fr}
+  .poster.focus-prism > .figure.tree{display:none}
+  footer .meta a{color:var(--dim);text-decoration:none;border-bottom:1px solid rgba(126,138,153,.3);transition:color .2s,border-color .2s}
+  footer .meta a:hover{color:var(--cyan);border-bottom-color:rgba(111,227,255,.45)}
+  .poster{
+    flex:1;min-height:0;height:calc(100vh - 250px);min-height:540px;max-height:820px;
+    display:grid;grid-template-columns:1.03fr .97fr;gap:34px;
+  }
+  .figure{display:flex;flex-direction:column;min-width:0;min-height:0;border-top:1px solid var(--line);padding-top:11px}
+  .figure.tree{border-left:1px solid var(--line);padding-left:34px}
+  .fig-head,.fig-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;
+    font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;
+  }
+  .fig-head b{font-weight:500;color:var(--muted)}
+  .fig-head span:last-child{color:var(--dim)}
+  .fig-foot{padding-top:8px;color:var(--muted);font-size:7.5px}
+  .fig-foot .live{color:var(--purple);opacity:.85}
+  .frame-wrap{position:relative;flex:1;min-height:0;margin:4px 0;overflow:hidden;background:var(--bg)}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg)}
+  footer{
+    flex:none;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
+    margin-top:10px;padding-top:11px;border-top:1px solid var(--line);
+    font-size:8px;letter-spacing:.12em;color:var(--dim);
+  }
+  footer .eq{display:flex;gap:26px;color:var(--muted)}
+  footer .eq b{font-weight:500;color:var(--gold)}
+  footer .eq i{font-style:normal;color:var(--purple)}
+  footer .meta{text-align:right;line-height:1.8;color:rgba(126,138,153,.65);font-size:7px}
+  footer .meta b{color:var(--muted);font-weight:400}
+  @media (max-width:1000px){
+    header{align-items:flex-start;flex-direction:column;gap:16px}
+    nav{justify-content:flex-start;padding-bottom:0}
+    .page{min-height:0}
+    .poster{flex:none;grid-template-columns:1fr;height:auto;max-height:none;gap:20px}
+    .figure.tree{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:11px}
+    .frame-wrap{flex:none;height:min(86vw,680px)}
+    .figure.tree .frame-wrap{height:min(92vw,720px)}
+    footer{flex-wrap:wrap;gap:9px}
+    footer .meta{text-align:left}
+  }
+  @media (max-width:640px){
+    .page{padding:18px 16px 14px}
+    h1{font-size:42px}
+    .brand-mark{width:24px;height:24px}
+    .lede{font-size:9px;max-width:none}
+    nav{gap:14px}
+    nav a{font-size:7px}
+    .poster{gap:16px}
+    .frame-wrap{height:min(102vw,560px)}
+    .figure.tree .frame-wrap{height:min(118vw,680px)}
+    .fig-head,.fig-foot{font-size:7px}
+    .fig-foot{gap:6px;flex-wrap:wrap}
+    footer .eq{gap:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#live">跳到实时画面</a>
+<div class="page">
+  <header>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="29" fill="none" stroke="rgba(232,201,122,.45)" stroke-width="1"/>
+        <circle cx="32" cy="25" r="11" fill="none" stroke="#e8c97a" stroke-width="1.2"/>
+        <circle cx="26" cy="38" r="11" fill="none" stroke="#6fe3ff" stroke-width="1.2"/>
+        <circle cx="38" cy="38" r="11" fill="none" stroke="#a855f7" stroke-width="1.2"/>
+      </svg>
+      <div>
+        <div class="kicker">A visual essay / 2026</div>
+        <h1>三光<em>·</em>世界式</h1>
+      </div>
+    </div>
+    <nav aria-label="站点导航">
+      <a class="active" href="#live" data-view="live" aria-current="page">Live</a>
+      <a href="#world" data-view="world">世界式</a>
+      <a href="#prism" data-view="prism">光锥</a>
+    </nav>
+  </header>
+
+  <p class="lede">两死，一生。紫是深渊。一场关于三月亮、深渊侵蚀与提瓦特 4-1-7 世界式的实时视觉笔记。</p>
+
+  <main class="poster" id="live">
+    <section class="figure">
+      <div class="fig-head"><b>01 / 三光</b><span>Three.js · drag to orbit</span></div>
+      <div class="frame-wrap">
+        <iframe src="prism_three.html?visual=1" title="Three.js 三光锥镜：光锥、三光源与三圈色散" loading="eager" scrolling="no"></iframe>
+      </div>
+      <div class="fig-foot">
+        <span>两环 · 死</span>
+        <span class="live">一环 · 生 / Abyss</span>
+        <span>雷 · 暗心</span>
+      </div>
+    </section>
+
+    <section class="figure tree">
+      <div class="fig-head"><b>02 / 世界式</b><span>HTML 3D · drag to rotate</span></div>
+      <div class="frame-wrap">
+        <iframe src="world_formula.html?embed=1" title="世界式十四节点立体图" loading="eager" scrolling="no"></iframe>
+      </div>
+      <div class="fig-foot">
+        <span>4 影</span>
+        <span>1 理</span>
+        <span>7 光</span>
+        <span>2 界间</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="eq">
+      <span>7 + 4 = <b>11</b></span>
+      <span>11 + 1 + 2 = <b>14</b></span>
+      <span><i>紫</i> = 深渊</span>
+    </div>
+    <div class="meta">
+      <b>THREE.JS / HTML 3D / NO DEPENDENCIES</b><br>
+      <a href="world_formula.html" target="_blank" rel="noopener">FULL NOTES ↗</a> ·
+      <a href="prism_three.html" target="_blank" rel="noopener">LAB ↗</a> ·
+      <a href="https://github.com/kenneykun/genshin347puzzle" target="_blank" rel="noopener">GITHUB ↗</a><br>
+      © 2026 · kenneykun
+    </div>
+  </footer>
+</div>
+<script>
+(() => {
+  const poster = document.querySelector('.poster');
+  const links = [...document.querySelectorAll('nav a[data-view]')];
+  const titles = {
+    live: '三光 · 世界式 — A Visual Essay',
+    world: '世界式 — 三光',
+    prism: '光锥 — 三光'
+  };
+  const views = new Set(Object.keys(titles));
+
+  function resizeFrames() {
+    document.querySelectorAll('iframe').forEach(frame => {
+      try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch (_) {}
+    });
+  }
+
+  function setView(view, push = false) {
+    if (!views.has(view)) view = 'live';
+    poster.classList.toggle('focus-world', view === 'world');
+    poster.classList.toggle('focus-prism', view === 'prism');
+    links.forEach(link => {
+      const active = link.dataset.view === view;
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    document.title = titles[view];
+    document.documentElement.dataset.view = view;
+    if (push && location.hash !== '#' + view) history.pushState(null, '', '#' + view);
+    requestAnimationFrame(() => requestAnimationFrame(resizeFrames));
+    window.scrollTo(0, 0);
+  }
+
+  links.forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      setView(link.dataset.view, true);
+    });
+  });
+
+  window.addEventListener('popstate', () => setView(location.hash.slice(1)));
+  window.addEventListener('hashchange', () => setView(location.hash.slice(1)));
+  setView(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

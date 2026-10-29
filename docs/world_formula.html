@@ -1,0 +1,2558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>世界式 · 十四律者 | 空月之歌 × 崩坏 3 的 14 节点几何</title>
+<meta name="description" content="从空月之歌的三月到崩坏的十四律者：用可旋转的 4-1-7 立体树与两个界间节点，解析 7+4+2+1、12+2 与 3+4→7 的数字骨架。">
+
+<style>
+/* ============================================================
+   世界式 · 十四律者
+   A self-contained, dependency-free interactive lore diagram.
+   ============================================================ */
+:root{
+  --bg:#04060c;
+  --bg-2:#080d18;
+  --ink:#ece7da;
+  --ink-soft:#cfc8b8;
+  --muted:#8f8d87;
+  --line:rgba(232,215,170,.13);
+  --line-2:rgba(232,215,170,.24);
+  --gold:#e8c97a;
+  --gold-soft:#f4e4b7;
+  --cyan:#6fe3ff;
+  --pink:#ff8fc7;
+  --violet:#a78bfa;
+  --green:#7ee2a8;
+  --crimson:#ff6b6b;
+  --teal:#5eead4;
+  --amber:#fbbf24;
+  --electro:#c084fc;
+  --dendro:#86efac;
+  --hydro:#60a5fa;
+  --pyro:#fb923c;
+  --cryo:#a5f3fc;
+  --panel:rgba(10,14,24,.74);
+  --panel-2:rgba(14,19,32,.9);
+  --font-sans:"Microsoft YaHei UI","Microsoft YaHei","PingFang SC","Noto Sans SC","Hiragino Sans GB",sans-serif;
+  --font-serif:"STSong","Songti SC","SimSun","Noto Serif SC",serif;
+  --font-mono:"Cascadia Code","Consolas","SFMono-Regular",monospace;
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 720px at 50% -12%, rgba(92,76,150,.20), transparent 62%),
+    radial-gradient(900px 640px at 12% 34%, rgba(28,93,112,.12), transparent 66%),
+    radial-gradient(900px 700px at 88% 62%, rgba(127,60,84,.10), transparent 66%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  font-size:14px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse at 50% 30%, black 0%, transparent 72%);
+  opacity:.5;
+}
+::selection{background:rgba(232,201,122,.28);color:#fff}
+button:focus-visible,a:focus-visible{outline:1px solid var(--gold-soft);outline-offset:3px}
+a{color:var(--gold-soft);text-decoration:none;text-underline-offset:3px}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:12px clamp(16px,3vw,40px);
+  background:linear-gradient(180deg, rgba(4,6,12,.92), rgba(4,6,12,.68));
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(18px) saturate(1.2);
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.sigil{width:34px;height:34px;flex:0 0 auto;color:var(--gold);filter:drop-shadow(0 0 8px rgba(232,201,122,.35))}
+.brand-title{font-family:var(--font-serif);font-size:15px;letter-spacing:.16em;white-space:nowrap}
+.brand-sub{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:34px;padding:0 12px;border-radius:9px;
+  border:1px solid var(--line);background:rgba(255,255,255,.025);
+  color:var(--ink-soft);font-size:11px;letter-spacing:.05em;cursor:pointer;
+  transition:border-color .2s, background .2s, color .2s, transform .2s;
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--line-2);background:rgba(255,255,255,.055);color:#fff}
+.btn:active{transform:translateY(1px)}
+.btn.primary{border-color:rgba(232,201,122,.38);background:rgba(232,201,122,.10);color:var(--gold-soft)}
+.btn.primary:hover{background:rgba(232,201,122,.17)}
+.btn .ico{width:13px;height:13px;display:block}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:minmax(248px,286px) minmax(0,1fr) minmax(286px,322px);
+  gap:16px;
+  max-width:1580px;
+  margin:0 auto;
+  padding:18px clamp(14px,2.6vw,32px) 10px;
+  min-height:calc(100vh - 59px);
+}
+.panel{
+  position:relative;
+  background:linear-gradient(180deg, rgba(14,19,32,.84), rgba(8,11,20,.68));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px;
+  backdrop-filter:blur(16px);
+  box-shadow:0 24px 70px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.045);
+}
+.panel::before{
+  content:"";position:absolute;left:18px;right:18px;top:0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(232,201,122,.38), transparent);
+  opacity:.7;pointer-events:none;
+}
+.left-panel,.right-panel{align-self:start;position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(232,201,122,.25) transparent}
+.left-panel::-webkit-scrollbar,.right-panel::-webkit-scrollbar{width:6px}
+.left-panel::-webkit-scrollbar-thumb,.right-panel::-webkit-scrollbar-thumb{background:rgba(232,201,122,.22);border-radius:99px}
+.eyebrow{
+  display:flex;align-items:center;gap:9px;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:var(--gold);
+  text-transform:uppercase;
+}
+.eyebrow::before{content:"";width:18px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+.hero h1{
+  margin-top:8px;
+  font-family:var(--font-serif);font-weight:600;
+  font-size:clamp(29px,2.55vw,40px);line-height:1.12;letter-spacing:.03em;
+}
+.hero h1 em{font-style:normal;color:var(--gold-soft);text-shadow:0 0 30px rgba(232,201,122,.24)}
+.lede{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.76}
+.equation-card{
+  margin-top:12px;padding:10px 12px 10px;border-radius:14px;
+  border:1px solid rgba(232,201,122,.20);
+  background:
+    radial-gradient(320px 120px at 20% 0%, rgba(232,201,122,.10), transparent 70%),
+    rgba(255,255,255,.018);
+}
+.eq-big{font-family:var(--font-serif);font-size:clamp(25px,2.2vw,34px);letter-spacing:.05em;color:var(--gold-soft)}
+.eq-big span{color:var(--muted);font-size:.72em;margin:0 .22em}
+.eq-sub{margin-top:2px;font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.eq-triplet{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.eq-triplet span{text-align:center;font-size:8px;line-height:1.25;color:var(--muted);letter-spacing:.04em}
+.eq-triplet b{display:block;font-family:var(--font-serif);font-size:15px;font-weight:500;color:var(--gold-soft);line-height:1.1}
+.eq-triplet small{display:block;margin-top:2px;font-size:7px;color:#7d7a72;letter-spacing:.02em}
+.eq-bars{display:flex;flex-direction:column;gap:4px;margin-top:9px}
+.eq-bar{display:grid;grid-template-columns:24px 1fr 28px;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+.eq-bar i{display:block;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--c),rgba(255,255,255,.08));box-shadow:0 0 10px var(--c);opacity:.8}
+.eq-bar b{font-weight:400;text-align:right;color:var(--ink-soft)}
+.layer-list{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.layer-chip{
+  display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:9px;
+  width:100%;padding:6px 8px;border-radius:10px;
+  border:1px solid transparent;background:rgba(255,255,255,.022);
+  cursor:pointer;text-align:left;transition:border-color .2s,background .2s,opacity .2s;
+}
+.layer-chip:hover{border-color:var(--line);background:rgba(255,255,255,.045)}
+.layer-chip.active{border-color:rgba(232,201,122,.42);background:rgba(232,201,122,.08)}
+.layer-chip .n{font-family:var(--font-serif);font-size:19px;color:var(--c,var(--gold));line-height:1}
+.layer-chip .t{font-size:11px;color:var(--ink-soft)}
+.layer-chip .t small{display:block;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;color:var(--muted);margin-top:1px}
+.layer-chip .d{width:7px;height:7px;border-radius:50%;background:var(--c,var(--gold));box-shadow:0 0 10px var(--c,var(--gold))}
+.layer-chip.ghost{border-style:dashed;border-color:rgba(111,227,255,.16);background:rgba(111,227,255,.018)}
+.layer-divider{margin:4px 0 1px;padding-top:4px;border-top:1px dashed var(--line);font-family:var(--font-mono);font-size:7px;letter-spacing:.15em;color:#77756f;text-transform:uppercase}
+.control-block{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+.control-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.toggle{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:6px 8px;border-radius:9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.018);color:var(--muted);font-size:10px;cursor:pointer;
+  transition:all .2s;text-align:left;
+}
+.toggle:hover{border-color:var(--line-2);color:var(--ink-soft)}
+.toggle .sw{width:20px;height:11px;border-radius:99px;background:rgba(255,255,255,.10);position:relative;flex:0 0 auto;transition:background .2s}
+.toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:7px;height:7px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.toggle[aria-pressed="true"]{border-color:rgba(232,201,122,.32);color:var(--gold-soft);background:rgba(232,201,122,.06)}
+.toggle[aria-pressed="true"] .sw{background:rgba(232,201,122,.25)}
+.toggle[aria-pressed="true"] .sw::after{transform:translateX(9px);background:var(--gold)}
+.seg{display:flex;padding:3px;border-radius:9px;border:1px solid var(--line);background:rgba(0,0,0,.2);gap:3px}
+.seg button{flex:1;padding:6px 4px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:10px;cursor:pointer;transition:all .2s}
+.seg button.active{background:rgba(232,201,122,.13);color:var(--gold-soft);box-shadow:0 0 12px rgba(232,201,122,.08)}
+.micro{margin-top:9px;font-size:9.5px;line-height:1.65;color:#77756f}
+.micro b{color:var(--ink-soft);font-weight:500}
+
+/* ---------- stage ---------- */
+.stage-column{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{
+  position:relative;flex:1;min-height:610px;border-radius:24px;overflow:hidden;
+  border:1px solid rgba(232,215,170,.14);
+  background:
+    radial-gradient(ellipse at 50% 36%, rgba(64,58,112,.28), transparent 58%),
+    radial-gradient(ellipse at 50% 102%, rgba(24,86,86,.18), transparent 62%),
+    linear-gradient(180deg, rgba(8,12,24,.94), rgba(3,5,11,.98));
+  box-shadow:inset 0 0 140px rgba(0,0,0,.62), 0 30px 90px rgba(0,0,0,.38);
+  touch-action:none;cursor:grab;isolation:isolate;
+}
+.stage:active{cursor:grabbing}
+.stage::before{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(232,201,122,.28), transparent 12%) left top/46px 1px no-repeat,
+    linear-gradient(180deg, rgba(232,201,122,.28), transparent 12%) left top/1px 46px no-repeat,
+    linear-gradient(270deg, rgba(232,201,122,.22), transparent 12%) right bottom/46px 1px no-repeat,
+    linear-gradient(0deg, rgba(232,201,122,.22), transparent 12%) right bottom/1px 46px no-repeat;
+  opacity:.8;
+}
+.stage::after{
+  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(circle at 50% 44%, transparent 38%, rgba(0,0,0,.34) 100%);
+}
+#edges{position:absolute;inset:0;z-index:1;width:100%;height:100%;display:block}
+.nodes,.labels{position:absolute;inset:0;z-index:4;pointer-events:none}
+.orb{
+  position:absolute;left:0;top:0;width:var(--size);height:var(--size);
+  border:1px solid rgba(255,255,255,.28);border-radius:50%;
+  transform-origin:50% 50%;
+  background:
+    radial-gradient(circle at 34% 25%, rgba(255,255,255,.98) 0 5%, rgba(255,255,255,.34) 12%, transparent 25%),
+    radial-gradient(circle at 50% 52%, var(--c) 0 24%, rgba(10,10,18,.82) 70%, rgba(0,0,0,.96) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 0 24px -3px var(--c),
+    inset 0 0 22px rgba(255,255,255,.08);
+  cursor:pointer;pointer-events:auto;
+  transition:box-shadow .2s, filter .2s, opacity .3s;
+  will-change:transform;
+  -webkit-tap-highlight-color:transparent;
+}
+.orb::before{
+  content:"";position:absolute;inset:-6px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.11);pointer-events:none;
+}
+.orb::after{
+  content:"";position:absolute;inset:8%;border-radius:50%;
+  border:1px solid rgba(255,255,255,.08);pointer-events:none;
+}
+.orb[data-cat="shade"]::before{border-style:dashed;border-color:rgba(167,139,250,.42);inset:-8px}
+.orb[data-cat="twin"]::before{border-color:rgba(111,227,255,.28);inset:-7px}
+.orb[data-cat="origin"]::before{border-color:rgba(232,201,122,.45);inset:-9px}
+.orb:hover{filter:brightness(1.16) saturate(1.08);box-shadow:0 0 0 1px rgba(255,255,255,.16),0 0 40px 0 var(--c),inset 0 0 26px rgba(255,255,255,.12)}
+.orb:focus-visible{outline:2px solid var(--gold-soft);outline-offset:5px}
+.orb.is-selected{box-shadow:0 0 0 2px var(--c),0 0 0 7px rgba(255,255,255,.08),0 0 58px 4px var(--c),inset 0 0 28px rgba(255,255,255,.16);animation:orbPulse 2.8s ease-in-out infinite}
+.orb.is-muted{opacity:.5;filter:saturate(.65)}
+.orb.is-dim{opacity:.42;filter:saturate(.55) brightness(.88)}
+.orb .num{
+  position:absolute;top:9%;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:clamp(7px,.72vw,9px);letter-spacing:.06em;
+  color:rgba(255,255,255,.72);text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;
+}
+.orb .glyph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding-top:4%;font-family:var(--font-serif);font-weight:700;
+  font-size:calc(var(--size) * .35);line-height:1;color:#fff;
+  text-shadow:0 1px 10px rgba(0,0,0,.6),0 0 18px var(--c);pointer-events:none;
+}
+.orb .glyph small{font-size:.48em;font-weight:400;opacity:.8;margin-left:1px}
+.node-label{
+  position:absolute;left:0;top:0;transform-origin:50% 50%;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:999px;
+  background:rgba(5,7,13,.64);border:1px solid rgba(255,255,255,.09);
+  color:var(--c);font-size:10px;line-height:1.2;letter-spacing:.03em;white-space:nowrap;
+  cursor:pointer;pointer-events:auto;backdrop-filter:blur(6px);
+  transition:opacity .25s,background .2s,border-color .2s,color .2s;
+  will-change:transform;
+}
+.node-label::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 7px var(--c);flex:0 0 auto}
+.node-label:hover{background:rgba(255,255,255,.10);border-color:var(--c);color:#fff}
+.node-label.is-muted{opacity:.45}
+.node-label.is-dim{opacity:.32}
+.node-label.is-selected{border-color:var(--c);color:#fff;background:rgba(255,255,255,.1)}
+.stage.labels-off .node-label{display:none}
+.stage.numbers-only .glyph{display:none}
+.stage.numbers-only .num{
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--font-serif);font-size:calc(var(--size) * .33);letter-spacing:.02em;color:#fff;
+}
+.stage.numbers-only .num::before{content:"律 ";font-family:var(--font-mono);font-size:.34em;letter-spacing:.1em;color:rgba(255,255,255,.55);vertical-align:middle}
+.stage.numbers-only .node-label{display:none}
+.stage.element-view .orb[data-layer="1"],
+.stage.element-view .orb[data-layer="2"],
+.stage.element-view .orb[data-layer="3"]{display:none}
+.stage.element-view .node-label[data-layer="1"],
+.stage.element-view .node-label[data-layer="2"],
+.stage.element-view .node-label[data-layer="3"]{display:none}
+.stage-meta{
+  position:absolute;left:16px;right:16px;top:13px;z-index:5;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-family:var(--font-mono);font-size:8px;letter-spacing:.16em;color:rgba(232,201,122,.58);
+  text-transform:uppercase;pointer-events:none;
+}
+.stage-meta .right{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.34);letter-spacing:.12em}
+.live{width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 9px var(--teal);animation:live 2.2s ease-in-out infinite}
+.stage-equation{
+  position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-size:clamp(48px,7vw,96px);letter-spacing:.06em;
+  color:rgba(232,201,122,.018);pointer-events:none;user-select:none;white-space:nowrap;
+}
+.stage-hint{
+  position:absolute;left:50%;bottom:14px;z-index:5;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:8px;letter-spacing:.13em;color:rgba(255,255,255,.30);
+  text-transform:uppercase;white-space:nowrap;pointer-events:none;
+}
+.zoom-controls{position:absolute;left:14px;bottom:12px;z-index:6;display:flex;gap:4px}
+.zoom-controls button{
+  width:26px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(5,7,13,.6);color:rgba(255,255,255,.55);font-family:var(--font-mono);
+  font-size:13px;line-height:1;cursor:pointer;backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.zoom-controls button:hover{border-color:rgba(232,201,122,.45);color:var(--gold-soft);background:rgba(232,201,122,.08)}
+.stage-legend{
+  position:absolute;right:16px;bottom:12px;z-index:5;display:flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.32);
+  pointer-events:none;
+}
+.stage-legend .key{display:flex;align-items:center;gap:4px}
+.stage-legend .line{width:15px;height:1px;background:rgba(232,201,122,.6)}
+.stage-legend .line.dash{background:repeating-linear-gradient(90deg,rgba(167,139,250,.75) 0 3px,transparent 3px 6px)}
+.stage-legend .line.occlude{background:repeating-linear-gradient(90deg,rgba(232,201,122,.85) 0 3px,transparent 3px 6px)}
+.stage-legend .line.vert{width:1px;height:10px;background:rgba(232,201,122,.75)}
+.stage-legend .dot{width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal)}
+
+/* ---------- rail ---------- */
+.rail{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:15px;border:1px solid var(--line);
+  background:rgba(9,13,22,.78);backdrop-filter:blur(14px);
+  min-width:0;
+}
+.rail-head{flex:0 0 auto;display:flex;flex-direction:column;gap:1px;padding-right:9px;border-right:1px solid var(--line)}
+.rail-head b{font-family:var(--font-serif);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--ink-soft)}
+.rail-head span{font-family:var(--font-mono);font-size:7px;letter-spacing:.13em;color:var(--muted)}
+.rail-track{display:flex;align-items:center;gap:4px;overflow-x:auto;min-width:0;padding:2px 1px;scrollbar-width:none}
+.rail-track::-webkit-scrollbar{display:none}
+.rail-item{
+  flex:0 0 auto;width:36px;height:36px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.018);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.rail-item .rn{font-family:var(--font-mono);font-size:7.5px;color:var(--muted);line-height:1.1}
+.rail-item .rg{font-family:var(--font-serif);font-size:12px;color:var(--c);line-height:1.25}
+.rail-item:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.05);transform:translateY(-1px)}
+.rail-item.active{border-color:var(--c);background:rgba(255,255,255,.065);box-shadow:0 0 14px -4px var(--c)}
+.rail-item.active .rn{color:#fff}
+
+/* ---------- right panel ---------- */
+.detail-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font-mono);font-size:8px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.detail-kicker .cat{color:var(--c,var(--gold));border:1px solid currentColor;border-radius:99px;padding:2px 7px;font-size:8px;letter-spacing:.1em}
+.detail-name{margin-top:10px;font-family:var(--font-serif);font-size:clamp(24px,2vw,31px);font-weight:600;line-height:1.2;letter-spacing:.02em}
+.detail-en{margin-top:3px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--muted)}
+.detail-gs{
+  display:flex;flex-direction:column;gap:1px;margin-top:14px;padding:10px 11px;border-radius:11px;
+  border:1px solid color-mix(in srgb,var(--c,var(--gold)) 28%, transparent);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c,var(--gold)) 9%, transparent),rgba(255,255,255,.015));
+}
+.detail-gs span{font-family:var(--font-mono);font-size:8px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.detail-gs b{font-size:13px;color:var(--ink);font-weight:500;line-height:1.5}
+.tri-role{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:8px;padding:7px 9px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.018)}
+.tri-role span{font-family:var(--font-mono);font-size:7.5px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.tri-role b{font-size:9.5px;font-weight:500;color:var(--c,var(--gold-soft));text-align:right;line-height:1.5}
+.detail-block{margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
+.detail-block h3{font-family:var(--font-mono);font-size:8px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;font-weight:400;margin-bottom:5px}
+.detail-block p{font-size:11.5px;line-height:1.85;color:var(--ink-soft)}
+.detail-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px}
+.detail-meta > div{padding:8px 9px;border-radius:9px;background:rgba(255,255,255,.022);border:1px solid var(--line)}
+.detail-meta span{display:block;font-family:var(--font-mono);font-size:7px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.detail-meta b{display:block;margin-top:2px;font-size:10px;font-weight:500;color:var(--ink-soft)}
+.detail-note{margin-top:12px;padding-left:9px;border-left:2px solid rgba(255,107,107,.35);font-size:10px;line-height:1.75;color:#a5a29a}
+.detail-back{margin-top:15px;width:100%;justify-content:center}
+.detail-empty .detail-lede{margin-top:10px;color:var(--ink-soft);font-size:12px;line-height:1.85}
+.detail-empty h2{margin-top:10px;font-family:var(--font-serif);font-size:27px;font-weight:600;line-height:1.22}
+.detail-empty h2 em{font-style:normal;color:var(--gold-soft)}
+.mini-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:16px}
+.mini-legend div{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--muted)}
+.mini-legend i{width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 7px var(--c)}
+.hint-card{margin-top:16px;padding:11px 12px;border-radius:11px;border:1px solid rgba(111,227,255,.16);background:rgba(111,227,255,.035)}
+.hint-card b{font-size:10px;color:var(--cyan);font-weight:500;letter-spacing:.04em}
+.hint-card p{margin-top:3px;font-size:10.5px;line-height:1.8;color:var(--muted)}
+.caveat-mini{margin-top:12px;font-size:9.5px;line-height:1.75;color:#76736c}
+.caveat-mini b{color:#a5a29a;font-weight:500}
+
+/* ---------- scroll sections ---------- */
+.section{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:88px clamp(18px,3.2vw,40px) 10px}
+.section-head{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(20px,4vw,58px);align-items:end;margin-bottom:30px}
+.section h2{margin-top:10px;font-family:var(--font-serif);font-size:clamp(29px,3.6vw,44px);font-weight:600;line-height:1.2;letter-spacing:.02em}
+.section h2 em{font-style:normal;color:var(--gold-soft)}
+.section-lede{color:var(--muted);font-size:12.5px;line-height:1.95;max-width:62ch}
+.section-lede b{color:var(--ink-soft);font-weight:500}
+.num-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.num-card{
+  position:relative;padding:20px 20px 18px;border-radius:17px;overflow:hidden;
+  border:1px solid var(--line);background:linear-gradient(160deg,rgba(14,19,32,.76),rgba(7,10,18,.62));
+  transition:border-color .25s,transform .25s,background .25s;
+}
+.num-card:hover{border-color:var(--line-2);transform:translateY(-2px);background:linear-gradient(160deg,rgba(18,24,40,.82),rgba(8,11,20,.7))}
+.num-card::after{content:"";position:absolute;right:-30px;top:-50px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,var(--c,var(--gold)) 0%,transparent 68%);opacity:.07;pointer-events:none}
+.num-index{font-family:var(--font-mono);font-size:8px;letter-spacing:.16em;color:var(--muted)}
+.num-formula{margin-top:9px;font-family:var(--font-serif);font-size:clamp(26px,2.6vw,36px);line-height:1.1;color:var(--gold-soft);letter-spacing:.04em}
+.num-formula span{color:var(--muted);font-size:.7em;margin:0 .18em}
+.num-card p{margin-top:9px;font-size:11.5px;line-height:1.85;color:var(--muted)}
+.num-card p b{color:var(--ink-soft);font-weight:500}
+.dots{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px;min-height:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--gold));box-shadow:0 0 8px -1px var(--c,var(--gold));opacity:.9}
+.dot.dim{opacity:.35;box-shadow:none}
+.dot.v{background:var(--violet);box-shadow:0 0 8px -1px var(--violet)}
+.dot.g{background:var(--green);box-shadow:0 0 8px -1px var(--green)}
+.dot.c{background:var(--cyan);box-shadow:0 0 8px -1px var(--cyan)}
+.dot.p{background:var(--pink);box-shadow:0 0 8px -1px var(--pink)}
+.dot.w{background:rgba(255,255,255,.32);box-shadow:none}
+.num-divider{height:1px;background:var(--line);margin:12px 0 10px}
+.num-small{display:flex;justify-content:space-between;gap:10px;font-family:var(--font-mono);font-size:8px;letter-spacing:.08em;color:muted;color:#77756f}
+
+/* geometry */
+.geometry-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.92fr) minmax(0,1.05fr);gap:12px;align-items:stretch}
+.geo-card{
+  position:relative;border-radius:18px;border:1px solid var(--line);
+  background:linear-gradient(160deg,rgba(13,18,30,.78),rgba(6,9,16,.64));
+  padding:16px;overflow:hidden;
+}
+.geo-card .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font-mono);font-size:8px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.geo-card .card-head b{color:var(--gold);font-weight:400;letter-spacing:.12em}
+.geo-card svg{display:block;width:100%;height:auto;margin-top:8px}
+.geo-card p{margin-top:10px;font-size:10.5px;line-height:1.8;color:var(--muted)}
+.geo-card p b{color:var(--ink-soft);font-weight:500}
+.geo-text{display:flex;flex-direction:column;justify-content:center;padding:24px}
+.geo-text h3{font-family:var(--font-serif);font-size:23px;font-weight:600;line-height:1.35;color:var(--gold-soft)}
+.geo-text p{margin-top:10px;font-size:11.5px;line-height:1.9;color:var(--muted)}
+.geo-text p b{color:var(--ink-soft);font-weight:500}
+.lab-link{
+  display:inline-flex;align-items:center;gap:8px;margin-top:12px;
+  width:max-content;padding:8px 11px;border:1px solid rgba(143,232,255,.30);
+  border-radius:9px;color:var(--cyan);text-decoration:none;
+  font-family:var(--mono);font-size:8px;letter-spacing:.10em;
+  background:rgba(143,232,255,.05);transition:background .2s,border-color .2s;
+}
+.lab-link:hover{background:rgba(143,232,255,.10);border-color:rgba(143,232,255,.55)}
+.lab-link span{font-size:12px}
+.callout{
+  margin-top:14px;padding:13px 14px;border-radius:11px;
+  border:1px solid rgba(232,201,122,.20);
+  background:linear-gradient(135deg,rgba(232,201,122,.08),rgba(111,227,255,.035));
+  font-family:var(--font-serif);font-size:19px;letter-spacing:.05em;color:var(--gold-soft);
+}
+.callout small{display:block;margin-top:3px;font-family:var(--font-sans);font-size:9.5px;letter-spacing:.02em;color:var(--muted);line-height:1.6}
+.svg-node{fill:rgba(8,12,20,.9);stroke-width:1.2}
+.svg-node.upper{stroke:var(--gold)}
+.svg-node.lower{stroke:var(--green)}
+.svg-node.hidden{stroke:var(--muted);stroke-dasharray:3 4;fill:transparent}
+.svg-label{font-family:var(--font-serif);font-size:12px;fill:var(--ink);text-anchor:middle}
+.svg-latin{font-family:var(--font-mono);font-size:6.5px;fill:var(--muted);letter-spacing:.08em;text-anchor:middle}
+.svg-path{stroke:rgba(232,215,170,.22);stroke-width:.8;fill:none}
+.svg-path.hot{stroke:var(--gold);stroke-width:1.4;filter:drop-shadow(0 0 3px rgba(232,201,122,.5))}
+.svg-num{font-family:var(--font-mono);font-size:6px;fill:rgba(232,201,122,.72);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3px}
+.svg-side{font-family:var(--font-mono);font-size:7px;fill:var(--muted);letter-spacing:.08em}
+.svg-ring{fill:none;stroke:rgba(232,215,170,.15);stroke-width:.7;stroke-dasharray:2 5}
+.svg-dot{stroke-width:1}
+.svg-center{font-family:var(--font-serif);font-size:18px;fill:var(--gold-soft);text-anchor:middle}
+.svg-caption{font-family:var(--font-mono);font-size:6.5px;fill:var(--muted);letter-spacing:.08em}
+
+/* table */
+.table-wrap{border-radius:17px;border:1px solid var(--line);background:rgba(8,12,20,.68);overflow:auto;max-height:680px;scrollbar-width:thin;scrollbar-color:rgba(232,201,122,.24) transparent}
+.table-wrap::-webkit-scrollbar{width:8px;height:8px}
+.table-wrap::-webkit-scrollbar-thumb{background:rgba(232,201,122,.22);border-radius:99px}
+table{width:100%;border-collapse:collapse;min-width:840px}
+thead th{
+  position:sticky;top:0;z-index:2;text-align:left;
+  padding:11px 13px;font-family:var(--font-mono);font-size:8px;font-weight:400;
+  letter-spacing:.13em;color:var(--muted);text-transform:uppercase;
+  background:rgba(9,13,22,.96);border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody tr{cursor:pointer;transition:background .18s}
+tbody tr:hover{background:rgba(255,255,255,.038)}
+tbody td{padding:11px 13px;border-bottom:1px solid rgba(255,255,255,.045);font-size:11px;color:var(--ink-soft);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+.cell-num{width:48px}
+.cell-num span{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:8px;border:1px solid var(--line);font-family:var(--font-mono);font-size:9px;color:var(--c,var(--gold));background:rgba(255,255,255,.025)}
+.cell-name b{display:block;font-size:11.5px;font-weight:500;color:var(--ink)}
+.cell-name small{display:block;margin-top:1px;font-family:var(--font-mono);font-size:7.5px;letter-spacing:.05em;color:var(--muted)}
+.cell-gs{color:var(--ink-soft)}
+.cell-gs small{display:block;font-family:var(--font-mono);font-size:7.5px;color:var(--muted);letter-spacing:.04em;margin-top:1px}
+.cat-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);font-size:8px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+.cat-pill::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--c,var(--gold))}
+.conf{display:flex;align-items:center;gap:3px}
+.conf i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15)}
+.conf i.on{background:var(--c,var(--gold));box-shadow:0 0 6px var(--c,var(--gold))}
+.conf span{margin-left:4px;font-size:8px;color:var(--muted);letter-spacing:.04em}
+.table-note{margin-top:9px;font-size:9.5px;color:#77756f}
+
+/* thesis */
+.thesis-list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.thesis{display:grid;grid-template-columns:82px minmax(0,1fr);gap:clamp(14px,3vw,36px);padding:22px 0;border-bottom:1px solid var(--line)}
+.thesis-num{font-family:var(--font-serif);font-size:32px;line-height:1;color:rgba(232,201,122,.42);letter-spacing:.02em}
+.thesis h3{font-family:var(--font-serif);font-size:19px;font-weight:600;line-height:1.4;color:var(--ink)}
+.thesis h3 em{font-style:normal;color:var(--gold-soft)}
+.thesis p{margin-top:6px;font-size:11.5px;line-height:1.9;color:var(--muted);max-width:78ch}
+.thesis p b{color:var(--ink-soft);font-weight:500}
+.syntax{
+  margin-top:26px;padding:18px 20px;border-radius:15px;
+  border:1px solid rgba(232,201,122,.22);
+  background:linear-gradient(135deg,rgba(232,201,122,.07),rgba(111,227,255,.03));
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.syntax .tokens{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.syntax .tokens span{padding:5px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+.syntax .tokens b{color:var(--gold-soft);font-weight:400}
+.syntax .total{font-family:var(--font-serif);font-size:20px;color:var(--gold-soft);white-space:nowrap}
+
+/* sources */
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.source-card{padding:18px;border-radius:15px;border:1px solid var(--line);background:rgba(10,14,24,.6)}
+.source-card h3{font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;font-weight:400}
+.source-card ul{margin:10px 0 0;padding:0 0 0 16px}
+.source-card li{font-size:10.5px;line-height:1.8;color:var(--muted);margin-bottom:5px}
+.source-card li b{color:var(--ink-soft);font-weight:500}
+.caveat-box{margin-top:12px;padding:16px 18px;border-radius:15px;border:1px solid rgba(255,107,107,.18);background:rgba(255,107,107,.035)}
+.caveat-box h3{font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;color:#e6a3a3;text-transform:uppercase;font-weight:400}
+.caveat-box p{margin-top:6px;font-size:10.5px;line-height:1.9;color:#a8a39a}
+.caveat-box p b{color:#d8cfc0;font-weight:500}
+footer{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:30px clamp(18px,3.2vw,40px) 46px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);color:#6f6d67;font-size:9px;font-family:var(--font-mono);letter-spacing:.08em}
+footer b{color:var(--gold);font-weight:400}
+
+/* ---------- keyframes ---------- */
+@keyframes orbPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.2)}}
+@keyframes live{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1240px){
+  .hero{grid-template-columns:minmax(240px,282px) minmax(0,1fr)}
+  .right-panel{grid-column:1 / -1;position:relative;top:0;max-height:none;margin-top:0}
+  .left-panel{top:72px}
+  .stage{min-height:600px}
+  .geometry-grid{grid-template-columns:1fr 1fr}
+  .geo-text{grid-column:1 / -1}
+}
+@media (max-width:900px){
+  .hero{display:flex;flex-direction:column;min-height:0;padding-top:12px}
+  .stage-column{order:1}
+  .right-panel{order:2;align-self:stretch;width:100%;max-width:760px;margin-left:auto;margin-right:auto}
+  .left-panel{order:3;position:relative;top:0;max-height:none;align-self:stretch;display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .rail-track{mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%)}
+  .left-panel > .eyebrow,.left-panel > h1,.left-panel > .lede,.left-panel > .equation-card{grid-column:1 / -1}
+  .left-panel > .layer-list{grid-column:1}
+  .left-panel > .control-block{grid-column:2;margin-top:0;padding-top:0;border-top:0}
+  .left-panel > .micro{grid-column:1 / -1}
+  .stage{min-height:min(74vh,680px)}
+  .section-head{grid-template-columns:1fr;gap:12px}
+  .num-grid{grid-template-columns:1fr}
+  .geometry-grid{grid-template-columns:1fr}
+  .source-grid{grid-template-columns:1fr}
+  .thesis{grid-template-columns:52px minmax(0,1fr);gap:12px}
+  .thesis-num{font-size:25px}
+}
+@media (max-width:680px){
+  .topbar{padding:10px 13px}
+  .brand-sub{display:none}
+  .brand-title{font-size:13px;letter-spacing:.1em}
+  .top-actions .btn{padding:0 9px;font-size:10px;height:31px}
+  .top-actions .btn .label{display:none}
+  .hero{padding:10px 10px 6px;gap:10px}
+  .panel{padding:14px;border-radius:16px}
+  .left-panel{display:block}
+  .left-panel > .control-block{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+  .stage{min-height:58vh;border-radius:18px}
+  .stage-hint{font-size:7px;letter-spacing:.1em;bottom:10px}
+  .stage-legend{display:none}
+  .node-label[data-layer="3"]{display:none}
+  .stage-meta{left:12px;right:12px;top:10px;font-size:7px;letter-spacing:.1em}
+  .rail{padding:7px 8px;gap:7px}
+  .rail-head{padding-right:7px}
+  .rail-head b{font-size:10px}
+  .rail-head span{display:none}
+  .rail-item{width:34px;height:34px}
+  .rail-item .rg{font-size:11px}
+  .section{padding:64px 14px 6px}
+  .section h2{font-size:29px}
+  .num-card{padding:16px}
+  .geo-card{padding:13px}
+  .geo-text{padding:18px}
+  .table-wrap{max-height:none}
+  footer{padding:24px 14px 36px;font-size:8px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+  html.embed body{overflow:hidden;background:#03050a}
+  html.embed .topbar,
+  html.embed .left-panel,
+  html.embed .right-panel,
+  html.embed .rail,
+  html.embed .stage-hint,
+  html.embed .stage-legend,
+  html.embed .zoom-controls,
+  html.embed .stage-meta,
+  html.embed .stage-equation,
+  html.embed main > .section,
+  html.embed footer{display:none!important}
+  html.embed .hero{display:block!important;width:100%;max-width:none;margin:0;padding:0;height:100vh;min-height:100vh}
+  html.embed .stage-column{width:100%;max-width:none;height:100vh;margin:0;padding:0}
+  html.embed .stage{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0}
+</style>
+<script>if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed');</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="sigil" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-opacity=".35" stroke-width=".8"/>
+      <circle cx="20" cy="20" r="13" stroke="currentColor" stroke-opacity=".22" stroke-width=".7" stroke-dasharray="2 4"/>
+      <path d="M20 4.5 24.4 15.6 36 20 24.4 24.4 20 35.5 15.6 24.4 4 20 15.6 15.6Z" stroke="currentColor" stroke-width=".9"/>
+      <circle cx="20" cy="20" r="2.1" fill="currentColor"/>
+    </svg>
+    <div>
+      <div class="brand-title">世界式 · 十四律者</div>
+      <div class="brand-sub">A 14-node geometry of honkai &amp; teyvat</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn" id="resetView" type="button" title="重置视角">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 3.5V7h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <span class="label">重置</span>
+    </button>
+    <a class="btn" href="#table" title="跳转到总表">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 3.5h11v9h-11zM2.5 6.5h11M6.5 3.5v9" stroke="currentColor" stroke-width="1.1"/></svg>
+      <span class="label">总表</span>
+    </a>
+    <a class="btn primary" href="#sources" title="资料与边界">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 2.5h7.5L13 5v8.5H3zM10 2.5V5h3" stroke="currentColor" stroke-width="1.1"/></svg>
+      <span class="label">资料</span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <aside class="panel left-panel" aria-label="结构与控件">
+      <div class="eyebrow">The world-formula</div>
+      <h1>十四律者<br><em>世界式</em></h1>
+      <p class="lede">从「空月之歌」的三月，到崩坏的 14 律者：把世界式的 3·4·7 和提瓦特的 7+4+2+1 放进同一个可旋转的几何体。4 影在上，7 光在下，天理在中间。数字是骨架，身份不是。</p>
+
+      <div class="equation-card" aria-label="数字骨架">
+        <div class="eq-big">14 <span>=</span> 7 + 7</div>
+        <div class="eq-sub">(1 + 2 + 4) + 7</div>
+        <div class="eq-sub" style="margin-top:2px">11 + 1 + 2 <span style="opacity:.65">/ 7 光 + 4 影 + 1 理 + 2 双子</span></div>
+        <div class="eq-triplet">
+          <span><b>3</b>来源<small>天理 + 双子</small></span>
+          <span><b>4</b>影<small>四影</small></span>
+          <span><b>7</b>光<small>3 + 3 + 1</small></span>
+        </div>
+      </div>
+
+      <div class="layer-list" id="layerList" aria-label="图层筛选">
+        <button class="layer-chip" data-layer="3" style="--c:var(--violet)" type="button">
+          <span class="n">4</span><span class="t">四影<small>SHADOW / 影</small></span><span class="d"></span>
+        </button>
+        <button class="layer-chip" data-layer="1" style="--c:var(--gold)" type="button">
+          <span class="n">1</span><span class="t">天理<small>INTERFACE / 界面</small></span><span class="d"></span>
+        </button>
+        <button class="layer-chip" data-layer="4" style="--c:var(--green)" type="button">
+          <span class="n">7</span><span class="t">七元素<small>LIGHT / 光 · 3+3+1</small></span><span class="d"></span>
+        </button>
+        <div class="layer-divider">Interstitial / 界间</div>
+        <button class="layer-chip ghost" data-layer="2" style="--c:var(--cyan)" type="button">
+          <span class="n">2</span><span class="t">双子<small>VARIABLES / 界间</small></span><span class="d"></span>
+        </button>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label">View / 视图</div>
+        <div class="toggle-grid">
+          <button class="toggle" id="toggleAuto" aria-pressed="true" type="button">自动旋转<span class="sw"></span></button>
+          <button class="toggle" id="toggleLabels" aria-pressed="true" type="button">标签<span class="sw"></span></button>
+          <button class="toggle" id="toggleStructure" aria-pressed="true" type="button">结构线<span class="sw"></span></button>
+          <button class="toggle" id="toggleNumbers" aria-pressed="false" type="button">纯数字<span class="sw"></span></button>
+        </div>
+        <div class="control-label" style="margin-top:12px">Labels / 标签面</div>
+        <div class="seg" id="labelMode" role="group" aria-label="标签模式">
+          <button data-mode="gs" class="active" type="button" aria-pressed="true">提瓦特</button>
+          <button data-mode="honkai" type="button" aria-pressed="false">律者</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <section class="stage-column" aria-label="十四节点立体图">
+      <div class="stage" id="stage">
+        <canvas id="edges" aria-hidden="true"></canvas>
+        <div class="stage-equation" aria-hidden="true">14 = 7 + 7</div>
+        <div class="stage-meta">
+          <span>World-formula / 14 nodes</span>
+          <span class="right"><i class="live"></i> Canon + inference</span>
+        </div>
+        <div class="nodes" id="nodes"></div>
+        <div class="labels" id="labels"></div>
+        <div class="zoom-controls" aria-label="缩放与视图">
+          <button id="zoomOut" type="button" aria-label="缩小">−</button>
+          <button id="zoomIn" type="button" aria-label="放大">＋</button>
+          <button id="viewElements" type="button" aria-label="俯视七元素三环" title="俯视七元素 / 3+3+1">◎</button>
+        </div>
+        <div class="stage-hint">拖拽全角度旋转 · 滚轮 / ± 缩放 · 双击复位</div>
+        <div class="stage-legend" aria-hidden="true">
+          <span class="key"><span class="line"></span>结构</span>
+          <span class="key"><span class="line occlude"></span>遮蔽</span>
+          <span class="key"><span class="line vert"></span>四影线</span>
+          <span class="key"><span class="dot"></span>流动</span>
+        </div>
+      </div>
+      <div class="rail" aria-label="十四席快速定位">
+        <div class="rail-head"><b>十四席</b><span>Click to focus</span></div>
+        <div class="rail-track" id="railTrack"></div>
+      </div>
+    </section>
+
+    <aside class="panel right-panel detail-empty" id="detail" aria-live="polite" aria-label="节点详情">
+      <div class="eyebrow">Reading / 读法</div>
+      <h2>同一部宪法，<br><em>两种政体。</em></h2>
+      <p class="detail-lede">崩坏把每个位置写成「律者」——一条法则的垄断；提瓦特把它写成「职位」——一条法则的制衡。</p>
+      <div class="mini-legend">
+        <div style="--c:var(--gold)"><i></i>1 天理</div>
+        <div style="--c:var(--cyan)"><i></i>2 双子</div>
+        <div style="--c:var(--violet)"><i></i>4 四影</div>
+        <div style="--c:var(--green)"><i></i>7 元素</div>
+      </div>
+      <div class="hint-card">
+        <b>从哪开始？</b>
+        <p>先点 01 天理 → 02 空 → 10 配，这是一条遮蔽线；再点 13 人，看她在四影与七元素之间的界间轨道。</p>
+      </div>
+      <p class="caveat-mini"><b>颜色：</b>每个节点用它的提瓦特对应色。四影带虚线外环，双子带青色外环。<br><b>操作：</b>拖拽旋转，滚轮缩放；点击节点锁定详情，双击空白处复位。<br><b>读法：</b>4 影在上，7 元素在下，01 天理在中间做界面 / 棱镜；七元素按参考图重排为 3+3+1（外三 / 内三 / 中心）。四影仍是 11→03、10→09、12→08、14→04 四条竖直对应线；02 空固定在 01–10 的遮蔽线上，13 人在四影 / 七元素之间的界间轨道。空之执政的新主人 = 双子（空）按剧情读法处理。这是结构模型，不是官方身份表。</p>
+    </aside>
+  </section>
+
+  <!-- ================= NUMBERS ================= -->
+  <section class="section" id="numbers">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">01 / Number skeleton</div>
+        <h2>先把数字<em>拆开</em>。</h2>
+      </div>
+      <p class="section-lede">同一个 14，可以沿四条轴切开：<b>7+7</b>（影侧七 / 光侧七）、<b>11+1+2</b>（7 光 + 4 影 = 11 方向，加 1 理与 2 双子）、<b>12+2</b>（系统与变量）、<b>3+4→7</b>（世界式的折叠）。注意：3 与 4 先折成 7，再与另一个 7 相加；这不是三个互不相干集合的简单加法，而是<b>同一个 7 的隐藏态与可见态</b>。</p>
+    </div>
+    <div class="num-grid">
+      <article class="num-card" style="--c:var(--gold)">
+        <div class="num-index">01 / TWO HEPTADS</div>
+        <div class="num-formula">14 = 7 + 7</div>
+        <p><b>影侧七：4 影 + 2 双子 + 1 天理 = 7</b>；<b>光侧七：7 元素（3+3+1）= 7</b>。天理在光与影之间，不属于任何一侧，但计入影侧的“隐藏七”。影侧七是「谁在写规则」，光侧七是「规则如何显形」；<b>两个 7 是同一个数字的两种状态。</b></p>
+        <div class="dots" aria-hidden="true">
+          <i class="dot"></i><i class="dot c"></i><i class="dot c"></i>
+          <i class="dot v"></i><i class="dot v"></i><i class="dot v"></i><i class="dot v"></i>
+          <i class="dot w"></i>
+          <i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i>
+        </div>
+        <div class="num-divider"></div>
+        <div class="num-small"><span>SHADOW 7</span><span>LIGHT 7</span></div>
+      </article>
+
+      <article class="num-card" style="--c:var(--cyan)">
+        <div class="num-index">02 / LIGHT + SHADOW + AXIS</div>
+        <div class="num-formula">11 + 1 + 2 = 14</div>
+        <p><b>7 光 + 4 影 = 11 个方向</b>；加 <b>1 天理</b>（界面 / 棱镜）与 <b>2 双子</b>，才是 14。它也等价于 <b>12 + 2</b>：1 天理 + 4 影 + 7 元素 = 12，双子是两个外部变量。崩坏侧前 12 席在循环内，第 13「人」与第 14「终焉」是能改写循环的一对。</p>
+        <div class="dots" aria-hidden="true">
+          <i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i>
+          <i class="dot v"></i><i class="dot v"></i><i class="dot v"></i><i class="dot v"></i>
+          <i class="dot"></i>
+          <i class="dot c"></i><i class="dot p"></i>
+        </div>
+        <div class="num-divider"></div>
+        <div class="num-small"><span>11 DIRECTIONS</span><span>1 AXIS · 2 TRAVELERS</span></div>
+      </article>
+
+      <article class="num-card" style="--c:var(--violet)">
+        <div class="num-index">03 / THE WORLD-FORMULA</div>
+        <div class="num-formula">3 + 4 = 7</div>
+        <p>世界式的文本把 <b>3</b> 称为表征、<b>4</b> 称为本质，二者叠合为 <b>7</b>，指向一条「垂直超越」的路径。三月、四影、七神是这条式的三个刻度；在本模型里，3 = 天理 + 双子，4 = 四影，7 = 七元素。<b>3 与 4 先折成隐藏的 7，再与可见的 7 相加，才是 14。</b></p>
+        <div class="dots" aria-hidden="true">
+          <i class="dot"></i><i class="dot c"></i><i class="dot c"></i>
+          <span style="width:12px"></span>
+          <i class="dot v"></i><i class="dot v"></i><i class="dot v"></i><i class="dot v"></i>
+          <span style="width:12px"></span>
+          <i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i>
+        </div>
+        <div class="num-divider"></div>
+        <div class="num-small"><span>3 REPRESENTATION</span><span>4 ESSENCE → 7 PATH</span></div>
+      </article>
+
+      <article class="num-card" style="--c:var(--green)">
+        <div class="num-index">04 / THE FOLD</div>
+        <div class="num-formula">1 + 2 + 4 = 7</div>
+        <p>节点数是 <b>1、2、4、7</b>。但 2 不占一层：它是两个界间节点。主层是 <b>4-1-7</b>（影 / 理 / 光），1 + 2 + 4 = 7 仍然成立，但 2 是插入项；02 空插在 01 理–10 配之间，13 人插在四影与七元素之间。</p>
+        <div class="dots" aria-hidden="true">
+          <i class="dot"></i><span style="width:100%"></span>
+        </div>
+        <div class="dots" style="margin-top:2px" aria-hidden="true">
+          <i class="dot c"></i><i class="dot c"></i><span style="width:100%"></span>
+        </div>
+        <div class="dots" style="margin-top:2px" aria-hidden="true">
+          <i class="dot v"></i><i class="dot v"></i><i class="dot v"></i><i class="dot v"></i><span style="width:100%"></span>
+        </div>
+        <div class="dots" style="margin-top:2px" aria-hidden="true">
+          <i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i><i class="dot g"></i>
+        </div>
+        <div class="num-divider"></div>
+        <div class="num-small"><span>1 + 2 + 4 = 7</span><span>7 + 7 = 14</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= GEOMETRY ================= -->
+  <section class="section" id="geometry">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">02 / From flat tree to solid tree</div>
+        <h2>平面是<em>接线图</em>，<br>立体是<em>治理树</em>。</h2>
+      </div>
+      <p class="section-lede">世界式的文本原型是卡巴拉生命之树：<b>10 个质点、22 条路径</b>，路径编号 0-21。平面图负责「谁和谁相连」；把它折成 <b>4-1-7 主层 + 2 个界间节点</b>，才能同时读出 <b>(3+4)→7</b> 与 <b>12+2</b>。</p>
+    </div>
+
+    <div class="geometry-grid">
+      <div class="geo-card">
+        <div class="card-head"><b>平面原型</b><span>Tree of Life / 10 + 22</span></div>
+        <svg viewBox="0 0 420 570" role="img" aria-label="卡巴拉生命之树示意图，10 个质点与 22 条编号路径">
+          <defs>
+            <radialGradient id="gK" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f4e4b7" stop-opacity=".22"/><stop offset="1" stop-color="#f4e4b7" stop-opacity="0"/></radialGradient>
+            <radialGradient id="gL" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#7ee2a8" stop-opacity=".16"/><stop offset="1" stop-color="#7ee2a8" stop-opacity="0"/></radialGradient>
+          </defs>
+          <text class="svg-side" x="10" y="150">3 上限</text>
+          <text class="svg-side" x="10" y="390">7 下限</text>
+          <line x1="8" y1="160" x2="8" y2="300" stroke="rgba(232,201,122,.18)" stroke-width=".7"/>
+          <line x1="8" y1="310" x2="8" y2="500" stroke="rgba(126,226,168,.18)" stroke-width=".7"/>
+
+          <!-- paths -->
+          <g class="svg-path">
+            <path d="M210 62 L330 140"/><path d="M210 62 L90 140"/>
+            <path d="M210 62 L210 218" stroke-dasharray="3 4"/><path d="M210 218 L210 330" stroke-dasharray="3 4"/>
+            <path d="M330 140 L90 140"/><path d="M330 140 L210 330"/><path d="M330 140 L330 292"/>
+            <path d="M90 140 L210 330"/><path d="M90 140 L90 292"/>
+            <path d="M90 292 L330 292"/><path d="M330 292 L210 330"/><path d="M330 292 L330 430"/>
+            <path d="M90 292 L210 330"/><path d="M90 292 L90 430"/>
+            <path d="M210 330 L330 430"/><path d="M210 330 L210 455"/><path d="M210 330 L90 430"/>
+            <path d="M90 430 L330 430"/><path d="M90 430 L210 455"/><path d="M330 430 L210 455"/>
+            <path d="M90 430 L210 530"/><path d="M210 455 L210 530"/><path d="M330 430 L210 530"/>
+          </g>
+          <!-- hot paths: 18, 20, 21 -->
+          <g class="svg-path hot">
+            <path d="M330 430 L210 530"/>
+            <path d="M90 430 L210 530"/>
+            <path d="M210 455 L210 530"/>
+          </g>
+
+          <!-- path numbers -->
+          <g class="svg-num">
+            <text x="268" y="96">0</text><text x="146" y="96">1</text><text x="216" y="180">2</text>
+            <text x="210" y="152">3</text><text x="272" y="236">4</text><text x="330" y="218">5</text>
+            <text x="148" y="236">6</text><text x="84" y="218">7</text><text x="210" y="284">8</text>
+            <text x="272" y="316">9</text><text x="330" y="362">10</text>
+            <text x="148" y="316">11</text><text x="84" y="362">12</text>
+            <text x="272" y="382">13</text><text x="210" y="394">14</text><text x="148" y="382">15</text>
+            <text x="210" y="424">16</text><text x="272" y="446">17</text><text x="270" y="480">18</text>
+            <text x="150" y="442">19</text><text x="150" y="480">20</text><text x="210" y="492">21</text>
+          </g>
+
+          <!-- nodes -->
+          <circle cx="210" cy="62" r="25" fill="url(#gK)" stroke="#e8c97a" stroke-width="1"/>
+          <circle cx="90" cy="140" r="25" fill="url(#gK)" stroke="#e8c97a" stroke-width="1"/>
+          <circle cx="330" cy="140" r="25" fill="url(#gK)" stroke="#e8c97a" stroke-width="1"/>
+          <circle cx="210" cy="218" r="23" fill="transparent" stroke="#8f8d87" stroke-width=".8" stroke-dasharray="3 4"/>
+          <circle cx="90" cy="292" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="330" cy="292" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="210" cy="330" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="90" cy="430" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="330" cy="430" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="210" cy="455" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+          <circle cx="210" cy="530" r="25" fill="url(#gL)" stroke="#7ee2a8" stroke-width="1"/>
+
+          <!-- labels -->
+          <text class="svg-label" x="210" y="58">王冠</text><text class="svg-latin" x="210" y="69">KETER</text>
+          <text class="svg-label" x="90" y="136">理解</text><text class="svg-latin" x="90" y="147">BINAH</text>
+          <text class="svg-label" x="330" y="136">智慧</text><text class="svg-latin" x="330" y="147">CHOKHMAH</text>
+          <text class="svg-latin" x="210" y="222">DA'AT</text>
+          <text class="svg-label" x="90" y="288">严厉</text><text class="svg-latin" x="90" y="299">GEVURAH</text>
+          <text class="svg-label" x="330" y="288">慈悲</text><text class="svg-latin" x="330" y="299">CHESED</text>
+          <text class="svg-label" x="210" y="326">和谐</text><text class="svg-latin" x="210" y="337">TIFERET</text>
+          <text class="svg-label" x="90" y="426">荣耀</text><text class="svg-latin" x="90" y="437">HOD</text>
+          <text class="svg-label" x="330" y="426">胜利</text><text class="svg-latin" x="330" y="437">NETZACH</text>
+          <text class="svg-label" x="210" y="451">基础</text><text class="svg-latin" x="210" y="462">YESOD</text>
+          <text class="svg-label" x="210" y="526">王国</text><text class="svg-latin" x="210" y="537">MALKUTH</text>
+
+          <text class="svg-caption" x="210" y="562">10 质点 · 22 路径 · 32 个数字位置</text>
+        </svg>
+        <p>路径 <b>18 / 20 / 21</b> 被标成金色：它们正是汇入「王国」的三条下降路径（18 月亮、20 审判、21 世界）。游戏文本出现过「第18、世界和20的路径」的说法；「世界」就是第 21 路径。</p>
+      </div>
+
+      <div class="geo-card">
+        <div class="card-head"><b>数字叠合</b><span>3 · 4 · 7</span></div>
+        <svg viewBox="0 0 360 330" role="img" aria-label="三层同心圆：3 表征、4 本质、7 显现">
+          <circle class="svg-ring" cx="180" cy="160" r="42"/>
+          <circle class="svg-ring" cx="180" cy="160" r="84"/>
+          <circle class="svg-ring" cx="180" cy="160" r="126"/>
+          <circle cx="180" cy="160" r="126" fill="none" stroke="rgba(232,201,122,.06)" stroke-width="6"/>
+
+          <!-- inner 3 -->
+          <g>
+            <circle cx="180" cy="118" r="6" fill="#e8c97a" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="143.4" cy="181" r="6" fill="#e8c97a" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="216.6" cy="181" r="6" fill="#e8c97a" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+          </g>
+          <!-- 4 -->
+          <g>
+            <circle cx="180" cy="76" r="6" fill="#a78bfa" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="264" cy="160" r="6" fill="#a78bfa" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="180" cy="244" r="6" fill="#a78bfa" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="96" cy="160" r="6" fill="#a78bfa" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+          </g>
+          <!-- 7 -->
+          <g>
+            <circle cx="180" cy="34" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="268.2" cy="76.2" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="305.4" cy="160" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="268.2" cy="243.8" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="180" cy="286" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="91.8" cy="243.8" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+            <circle cx="54.6" cy="160" r="5.5" fill="#7ee2a8" stroke="rgba(255,255,255,.6)" stroke-width=".8"/>
+          </g>
+          <!-- connecting radii -->
+          <g stroke="rgba(232,215,170,.12)" stroke-width=".6">
+            <line x1="180" y1="118" x2="180" y2="76"/><line x1="143.4" y1="181" x2="96" y2="160"/><line x1="216.6" y1="181" x2="264" y2="160"/>
+            <line x1="180" y1="76" x2="180" y2="34"/><line x1="264" y1="160" x2="305.4" y2="160"/><line x1="180" y1="244" x2="180" y2="286"/><line x1="96" y1="160" x2="54.6" y2="160"/>
+          </g>
+          <text class="svg-center" x="180" y="158">3 + 4</text>
+          <text class="svg-center" x="180" y="180" style="font-size:12px;fill:var(--muted)">= 7</text>
+          <text class="svg-side" x="180" y="20" text-anchor="middle" style="fill:#e8c97a">3 表征</text>
+          <text class="svg-side" x="180" y="62" text-anchor="middle" style="fill:#a78bfa">4 本质</text>
+          <text class="svg-side" x="180" y="312" text-anchor="middle" style="fill:#7ee2a8">7 显现</text>
+        </svg>
+        <p>三颗内点、四颗中点、七颗外点。世界式的「3+4=7」不是算术题，而是<b>折叠</b>：隐藏的三与四，折进可见的七。</p>
+      </div>
+
+      <div class="geo-card geo-text">
+        <div class="card-head"><b>为什么是立体</b><span>The fold</span></div>
+        <h3>平面只能画「连接」，立体才能画「层级」。</h3>
+        <p>生命之树的平面图有 <b>10 个质点 + 22 条路径</b>。它很完整，却读不出「影在上、理在中、光在下」的垂直关系。把影层、界面、光层沿纵轴拉开，就得到一棵 <b>4-1-7</b> 的立体树；02 空与 13 人不再占层，而是分别插在 1–4 与 4–7 之间。</p>
+        <p>这一步是<b>重排</b>，不是篡改：数字仍然是 3、4、7，只是把「路径的接线」折成「层的包含」。折完之后，14 个治理节点同时满足 <b>7+7</b> 与 <b>12+2</b>，也满足 <b>11+1+2</b>。</p>
+        <div class="callout">4 影（上）→ 1 理（界面）→ 7 光（下）<br>11 + 1 + 2 = 14<small>7 光 + 4 影 = 11 个方向；天理在光与影之间，双子是两个界间变量。</small></div>
+        <p style="margin-top:12px">主图里上下两个锥体就是这条关系的可视化：上面是<b>影锥</b>（4 影），下面是<b>光锥</b>（7 元素），01 在锥腰，周围一圈七色是棱镜/界面。7 元素的光穿过这层界面，投影成上方的 4 影；<b>11 = 7 光 + 4 影</b> 个方向从这里展开。</p>
+        <p>四影层不再收成四边形，而是被拉成 <b>四条竖直对应线</b>：<b>11 约束 / 死 → 03 雷</b> 走中线，<b>10 支配 / 空 → 09 岩</b>、<b>12 侵蚀 / 生 → 08 草</b>、<b>14 终焉 / 时 → 04 风</b> 各自垂直落到元素。四影仍是四席，几何上却变成一根中轴 + 三根立柱（10 / 12 / 14）。</p>
+        <p>七元素层内部又复现了一次 <b>3+4</b>：外三角是火 / 水 / 冰，内三角是草 / 风 / 岩，中心是雷。外三 + 内四 = 7。图中首轮 / 次轮同序：<b>冰 → 雷 → 草 → 水 → 风 → 火 → 岩</b>；两轮重复，表示七元循环。</p>
+        <p>在游戏文本里，世界式并不是一张公开的 3D 模型；它是一个<b>可计算的式</b>。所以这张立体图是「读法」，不是「官方截图」。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIGHT / SHADOW / PRISM ================= -->
+  <section class="section" id="optics">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">03 / Light, shadow, prism</div>
+        <h2>十一向轮，<em>三重分光</em>。</h2>
+      </div>
+      <p class="section-lede">如果七元素是<b>光</b>、四影是<b>影</b>，天理就不该躲在影的背面，而应站在光与影之间，做那个<b>界面 / 棱镜</b>。11 = 7 光 + 4 影；再加 1 理与 2 双子，才是 14。</p>
+    </div>
+
+    <div class="geometry-grid">
+      <div class="geo-card">
+        <div class="card-head"><b>十一向轮</b><span>11 = 7 LIGHT + 4 SHADOW</span></div>
+        <svg viewBox="0 0 420 420" role="img" aria-label="十一方向轮：七光在外，四影在内，天理在中心">
+          <defs>
+            <radialGradient id="wheelCore" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#f4e4b7" stop-opacity=".35"/>
+              <stop offset="1" stop-color="#f4e4b7" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="210" cy="210" r="165" class="svg-ring"/>
+          <circle cx="210" cy="210" r="115" class="svg-ring"/>
+          <circle cx="210" cy="210" r="48" fill="none" stroke="rgba(232,201,122,.20)" stroke-width=".8" stroke-dasharray="2 5"/>
+          <circle cx="210" cy="210" r="70" fill="url(#wheelCore)"/>
+          <g id="wheelMarks"></g>
+          <circle cx="210" cy="210" r="22" fill="rgba(5,7,13,.85)" stroke="#e8c97a" stroke-width="1"/>
+          <text x="210" y="208" text-anchor="middle" fill="#f4e4b7" font-family="STSong, Songti SC, serif" font-size="12">01</text>
+          <text x="210" y="222" text-anchor="middle" fill="#8f8d87" font-family="Cascadia Code, monospace" font-size="6">天理</text>
+          <text x="30" y="206" fill="#7ee2a8" font-family="Cascadia Code, monospace" font-size="7">7 光</text>
+          <text x="30" y="228" fill="#a78bfa" font-family="Cascadia Code, monospace" font-size="7">4 影</text>
+        </svg>
+        <p>轮上的 11 个方向不是 11 个神，而是 <b>7 个光位 + 4 个影位</b>。中心是 01 天理；两个双子不占轮上的方向，所以 11 + 1 + 2 = 14。</p>
+      </div>
+
+      <div class="geo-card">
+        <div class="card-head"><b>三光源 / 一锥镜</b><span>3 → 1 → 3 × 7</span></div>
+        <svg viewBox="0 0 420 420" role="img" aria-label="三个光源穿过同一个圆锥棱镜，形成三条彩虹环">
+          <defs>
+            <linearGradient id="prismFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#dfe9ff" stop-opacity=".14"/>
+              <stop offset="1" stop-color="#6fe3ff" stop-opacity=".04"/>
+            </linearGradient>
+            <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#5eead4"/>
+              <stop offset=".18" stop-color="#fbbf24"/>
+              <stop offset=".36" stop-color="#a5f3fc"/>
+              <stop offset=".54" stop-color="#86efac"/>
+              <stop offset=".72" stop-color="#60a5fa"/>
+              <stop offset=".88" stop-color="#fb923c"/>
+              <stop offset="1" stop-color="#c084fc"/>
+            </linearGradient>
+            <filter id="prismGlow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <g filter="url(#prismGlow)" opacity=".8">
+            <path d="M120 370 L205 220" stroke="#f2d184" stroke-width="2" opacity=".55"/>
+            <path d="M210 380 L210 220" stroke="#dfe9ff" stroke-width="2" opacity=".65"/>
+            <path d="M300 370 L215 220" stroke="#6fe3ff" stroke-width="2" opacity=".55"/>
+          </g>
+          <g opacity=".72">
+            <ellipse cx="210" cy="178" rx="112" ry="30" fill="none" stroke="url(#rainbow)" stroke-width="4" transform="rotate(-6 210 178)"/>
+            <ellipse cx="210" cy="164" rx="96" ry="26" fill="none" stroke="url(#rainbow)" stroke-width="3" transform="rotate(5 210 164)"/>
+            <ellipse cx="210" cy="192" rx="128" ry="34" fill="none" stroke="url(#rainbow)" stroke-width="2.4" transform="rotate(10 210 192)"/>
+          </g>
+          <g opacity=".18">
+            <ellipse cx="210" cy="178" rx="112" ry="30" fill="none" stroke="#fff" stroke-width="10" transform="rotate(-6 210 178)"/>
+          </g>
+          <path d="M210 86 L112 304 A98 26 0 0 0 308 304 Z" fill="url(#prismFill)" stroke="rgba(232,201,122,.35)" stroke-width="1"/>
+          <ellipse cx="210" cy="304" rx="98" ry="26" fill="none" stroke="rgba(232,215,170,.22)" stroke-width="1"/>
+          <circle cx="210" cy="220" r="3" fill="#fff" filter="url(#prismGlow)"/>
+          <g fill="none" stroke="#fff" stroke-opacity=".55">
+            <path d="M210 86 L210 304" stroke-dasharray="2 6"/>
+          </g>
+          <text x="210" y="74" text-anchor="middle" fill="#f4e4b7" font-family="Cascadia Code, monospace" font-size="7">1 CONICAL PRISM</text>
+          <text x="210" y="386" text-anchor="middle" fill="#8f8d87" font-family="Cascadia Code, monospace" font-size="7">3 LIGHT SOURCES → 3 DISPERSIONS</text>
+        </svg>
+        <p>三个光源（可对应外三角的火 / 水 / 冰）穿过<b>同一个圆锥棱镜</b>，得到三条错位的彩虹环；三环叠合，才出现七元素的 <b>3+3+1</b>。这是结构隐喻，不是游戏内物理。</p>
+      </div>
+
+      <div class="geo-card geo-text">
+        <div class="card-head"><b>实现选择</b><span>HTML / Canvas / Three.js</span></div>
+        <h3>结构图用纯 HTML 就够；真实折射才需要 WebGL。</h3>
+        <p>主图继续用<b>纯 canvas/HTML</b>：可交互、单文件、离线，旋转和节点选择都不依赖外部库。锥镜用风格化 SVG 画“光路示意”，不冒充真实光学。</p>
+        <p>Three.js 本身不负责“分光”；它只是渲染器。要真实色散，需要<b>光谱 + 折射 shader</b>，甚至光线追踪。对一张结构图来说，成本和可读性都不划算。</p>
+        <p>如果你要一个能真实旋转、可调折射率的棱镜实验，可以打开单独的 <b>Three.js / WebGL</b> 页面；但不建议把它塞进当前这个“世界式结构图”里。</p>
+        <a class="lab-link" href="prism_three.html">打开 Three.js 棱镜实验 <span>→</span></a>
+        <a class="lab-link" href="world_formula_visual.html">三光 · 世界式（视觉合成版） <span>→</span></a>
+        <div class="callout">7 光 + 4 影 = 11<br>11 + 1 理 + 2 双子 = 14<small>天理在光与影之间；双子是两个界间变量。</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TABLE ================= -->
+  <section class="section" id="table">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">04 / The correspondence table</div>
+        <h2>十四席，<em>逐位对读</em>。</h2>
+      </div>
+      <p class="section-lede">每一行是一个「结构位」：崩坏的律者、权能、提瓦特的对应、所属层、以及本文的映射强度。<b>强度是语义置信度，不是官方设定等级。</b>点击任意一行，回到上面的立体图。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>律者 / Herrscher</th>
+            <th>权能</th>
+            <th>提瓦特对应</th>
+            <th>层</th>
+            <th>映射强度</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <p class="table-note">※ 竖向关系：<b>4 影（上）→ 1 天理（界面 / 棱镜）→ 7 元素（光，下）</b>；11 = 7 光 + 4 影，再加 1 理与 2 双子 = 14。<br>※ 七元素层按参考图重排为 <b>3+3+1</b>：外三角 = 火 / 水 / 冰，内三角 = 草 / 风 / 岩，中心 = 雷。<br>※ 四影—元素按直线关系重排：<b>11→03、10→09、12→08、14→04</b>；这是读图模型，不是官方配对。<br>※ 七元素 ≠ 七神：元素权柄先于七神，七神只是当前七席的承担者。<br>※ 06 死 → 水 是全表最弱的一环；若改成 06 死 → 草、08 识 → 水，3-9 的七元素段仍然成立，但语义会更散。本文选择保留「死/水」的生死循环义。</p>
+  </section>
+
+  <!-- ================= PRINCIPLE ================= -->
+  <section class="section" id="principle">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">05 / The underlying principle</div>
+        <h2>同一部宪法，<em>两种政体</em>。</h2>
+      </div>
+      <p class="section-lede">如果只看「谁像谁」，这张表很快就会变成拉郎配。更有解释力的读法是：<b>14 个位置是不变量，名字是局部变量。</b>崩坏与提瓦特各自把同一组位置写成了不同的制度。</p>
+    </div>
+
+    <div class="thesis-list">
+      <article class="thesis">
+        <div class="thesis-num">01</div>
+        <div>
+          <h3>数字是不变量，<em>身份不是</em>。</h3>
+          <p>14 个律者是崩坏侧的固定 cycle；提瓦特的 <b>1+4+7+2</b> 也恰好是 14。两边真正共享的不是角色，而是<b>位置的数目与分层</b>。所以本文用「对应」而不是「同一人」：同一条法则，在两个世界里被写成了不同的角色。</p>
+        </div>
+      </article>
+
+      <article class="thesis">
+        <div class="thesis-num">02</div>
+        <div>
+          <h3>12 + 2：<em>系统与变量</em>。</h3>
+          <p>提瓦特的行政栈是 12：<b>1 天理 + 4 影 + 7 元素</b>。双子是两个外部变量，所以总数才是 14。崩坏侧的前 12 席在循环内，第 13「人」与第 14「终焉」是能改写循环的一对。<b>一个封闭系统，必须留两个外部位，公式才是可解的。</b></p>
+        </div>
+      </article>
+
+      <article class="thesis">
+        <div class="thesis-num">03</div>
+        <div>
+          <h3>3 + 4 = 7：<em>隐藏的治理折进可见的元素</em>。</h3>
+          <p>世界式说 3 是表征、4 是本质，二者叠合为 7。放在提瓦特：3 是来源（天理 + 双子），4 是四影，7 是七元素。放在生命之树：3 是 veil、4 是 world、7 是 lower sephirot。<b>可见的七，是隐藏的三与四的投影。</b></p>
+        </div>
+      </article>
+
+      <article class="thesis">
+        <div class="thesis-num">04</div>
+        <div>
+          <h3>7 + 7：<em>自然律与概念律</em>。</h3>
+          <p>崩坏侧的 14 可以分成两重七：<b>3-9 的七个自然/元素型律者</b>（雷、风、冰、死、炎、识、地），与<b>1、2、10-14 的七个概念/文明型律者</b>（理、空、支配、约束、侵蚀、人、终焉）。前七管「规则如何成立」，后七管「世界如何显形」。</p>
+        </div>
+      </article>
+
+      <article class="thesis">
+        <div class="thesis-num">05</div>
+        <div>
+          <h3>同一权能，<em>两种极性</em>。</h3>
+          <p>崩坏把原理写成「律者」——一条法则的<b>垄断</b>，所以它总是以灾厄出现；提瓦特把原理写成「职位」——一条法则的<b>制衡</b>，所以它表现为神权与执政。空间 ↔ 支配、死亡 ↔ 约束、生命 ↔ 侵蚀、时间 ↔ 终焉：四影是「在任」，四律者是「失控」。<b>同一枚硬币，一面是制度，一面是灾难。</b></p>
+        </div>
+      </article>
+    </div>
+
+    <div class="syntax">
+      <div class="tokens">
+        <span><b>1</b> axiom</span><span>+</span>
+        <span><b>2</b> variables</span><span>+</span>
+        <span><b>4</b> operators</span><span>+</span>
+        <span><b>7</b> literals</span>
+      </div>
+      <div class="total">= 14 tokens · 一棵世界式的语法树</div>
+    </div>
+  </section>
+
+  <!-- ================= SOURCES ================= -->
+  <section class="section" id="sources">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">06 / Sources &amp; boundaries</div>
+        <h2>把<em>锚点</em>和<em>推论</em>分开。</h2>
+      </div>
+      <p class="section-lede">下面这些链接是可复核的锚点；「十四对应」是本文的结构模型，不是官方设定。涉及 6.x 的新剧情，官方文本仍在展开，本文只取能公开复核的部分。</p>
+    </div>
+
+    <div class="source-grid">
+      <div class="source-card">
+        <h3>Canon anchors / 可复核锚点</h3>
+        <ul>
+          <li><b>世界式与生命之树：</b><a href="https://namu.wiki/w/%EB%A5%B4%EB%84%A4(%EC%9B%90%EC%8B%A0)" target="_blank" rel="noreferrer">Namu Wiki · 르네(원신)</a> 总结了世界式的 3·4·7 文本、三月/四影/七神的三段，以及「世界式以生命之树为原型」。</li>
+          <li><b>十四律者：</b><a href="https://hoyodex.miraheze.org/wiki/Herrscher" target="_blank" rel="noreferrer">HoYoverse Universe Index · Herrscher</a> 列出前文明与现文明的 14 席、权能与编号差异。</li>
+          <li><b>四影：</b><a href="https://game8.co/games/Genshin-Impact/archives/536100" target="_blank" rel="noreferrer">Game8 · Four Shades</a> 与 <a href="https://wiki.hoyolab.com/m/genshin/entry/7086" target="_blank" rel="noreferrer">HoYoWiki · Shades</a>：Naberius（生）、Ronova（死）、Istaroth（时）、Asmoday（空）。</li>
+          <li><b>三月与第一降临者：</b><a href="https://home.gamer.com.tw/artwork.php?sn=6283800" target="_blank" rel="noreferrer">巴哈姆特 · 空月之歌第八幕剧情攻略</a> 概述了三月女神、龙王、第一降临者与「天理」的当前叙事。</li>
+          <li><b>平面树与密合之印：</b><a href="https://zlb.ink/t/topic/38289/3" target="_blank" rel="noreferrer">壁吧专楼吧 · 世界式/密合之约印原型</a> 将游戏内图案与生命之树并置；<a href="https://www.bilibili.com/read/cv27237930/" target="_blank" rel="noreferrer">Bilibili · 密合之约印拆解</a> 是中文社区较早的图案拆解。</li>
+          <li><b>「第18、世界和20」：</b><a href="https://bbs.nga.cn/read.php?tid=44031935" target="_blank" rel="noreferrer">NGA 讨论帖</a> 的标题直接引用了这句游戏文本；访客可能需要登录。</li>
+        </ul>
+      </div>
+      <div class="source-card">
+        <h3>Fan synthesis / 本文的推论</h3>
+        <ul>
+          <li><b>7+4+2+1：</b>把提瓦特读成「七元素 + 四影 + 双子 + 天理」，再与 14 律者对齐。这是结构映射，不是官方名单。</li>
+          <li><b>3 = 2+1：</b>把「三月」读成「天理 + 双子」的来源三。官方没有明说这个等式；它来自 3+4=7 与 1+2+4=7 的数字闭合。</li>
+          <li><b>10-14 与四影：</b>支配→空、约束→死、侵蚀→生、终焉→时。四影的职名是官方；与具体律者的配对是语义映射，可重排。</li>
+          <li><b>四影—元素直线：</b>11 约束 / 死 → 03 雷、10 支配 / 空 → 09 岩、12 侵蚀 / 生 → 08 草、14 终焉 / 时 → 04 风。四影被拉成一中轴 + 三立柱；这是按参考图的直线关系做的重排，不是官方配对。</li>
+          <li><b>双子位置：</b>02 空固定在 01 理–10 配的遮蔽线上（按「空之执政已有新主人 = 双子空」的剧情读法）；13 人不占四影层，而在四影与七元素之间的界间轨道上旅行。两者都不再组成「2 双子」几何层。</li>
+          <li><b>光 / 影 / 三光分光：</b>把 7 元素读成光、4 影读成影、01 天理读成两者之间的界面 / 棱镜；11 = 7 光 + 4 影。三光源穿同一锥镜、产生三条彩虹环，是对七元素 3+3+1 的结构隐喻，不是游戏内物理。</li>
+          <li><b>4-1-7 立体树 + 2 个界间节点：</b>把平面的 10 质点 + 22 路径折成 4 影（上）/ 1 天理（界面）/ 7 元素（光，下）的主层；02 空插在 01–10 的遮蔽线上，13 人插在四影与七元素之间的界间轨道。游戏内的世界式没有公开的 3D 模型；这是本文为了同时读出 (3+4)→7 与 11+1+2 而做的可视化。</li>
+          <li><b>「18 / 世界 / 20」：</b>按传统 Tarot 路径编号，18=月亮、20=审判、21=世界；三条都汇入 Malkuth（王国）。游戏文本的并置方式与这套编号吻合，但具体指涉仍以官方文本为准。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="caveat-box">
+      <h3>What this model does not claim / 它不主张什么</h3>
+      <p><b>不主张身份同一。</b>天理不是理之律者，荧不是人之律者，Asmoday 不是支配之律者。它主张的是「位置同构」：同一组 14 个功能位，在两个叙事里被赋予了不同的名字与极性。</p>
+      <p><b>不主张唯一解。</b>6 死→水 是弱映射；10-12 与四影的配对可以重排；三月=天理+双子 是推论；四影—元素直线（11→03、10→09、12→08、14→04）、02 空的 01–10 遮蔽线、13 人的界间位置、7 光 / 4 影 / 1 界面与三光分光，也都是按剧情、图像与光学隐喻做的结构读法，不是官方关系或官方物理。任何一张 14 对应表都会在这些位置上有争议，本文把争议点直接标出来，而不是藏起来。</p>
+      <p><b>不主张官方 3D 模型。</b>世界式是文本与计算式；「4-1-7 立体树 + 2 个界间节点」是读者为了看清数字关系而做的重构。它的价值在于可读、可旋转、可反驳，而不在于「这就是米哈游的原图」。</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span><b>世界式 · 十四律者</b> / a lore-structure study</span>
+  <span>Built as a self-contained HTML · 2026-10 · 非官方</span>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ============================================================
+     Data
+     ============================================================ */
+  const NODES = [
+    {
+      id: 1, num: '01', glyph: '理', name: '理之律者', en: 'Herrscher of Reason',
+      short: '理', label: '天理', labelHonkai: '理律',
+      gs: '天理', gsEn: 'Heavenly Principles',
+      gsFull: '天理 · Heavenly Principles',
+      cat: 'origin', catName: '天理', layer: 1, size: 92, color: '#f2d184',
+      side: 0, angle: null, confidence: 2,
+      authority: '理解即创造：只要被理解，就能重构。',
+      lineRole: '界面：4 影 ↔ 7 光',
+      why: '「理」与「天理」共享同一个字。天理不是躲在影的背面，而是站在光与影之间的界面 / 棱镜：下面 7 元素是光，上面 4 影是影，01 是两者的换算面。理之律者则是把「理解」变成世界法则的人。',
+      note: '天理的身份在 6.x 仍在展开；这里取「光/影界面」的结构位，不做身份等同。'
+    },
+    {
+      id: 2, num: '02', glyph: '空', name: '空之律者', en: 'Herrscher of the Void',
+      short: '空', label: '空 · 双子', labelHonkai: '空律',
+      gs: '空 / Aether', gsEn: 'The Traveler',
+      gsFull: '空 · Aether（双子）',
+      cat: 'twin', catName: '双子', layer: 2, size: 74, color: '#6fe3ff',
+      side: -1, angle: null, confidence: 2,
+      lineRole: '遮蔽线：01 理 → 02 空 → 10 配',
+      lineShort: 'Aether · 01–10 遮蔽线',
+      authority: '空间、虚数空间、亚空之矛。',
+      why: '空之律者操弄空间与虚数；双子中的「空」是玩家视角的旅行者。按「空月之歌」的剧情读法，空之执政的权柄已有新主人，即双子（空）；所以 02 不再与「人」组成双生层，而是固定在 01 理–10 配 的连线上，遮蔽天理的权能。',
+      note: '剧情读法：空之执政的新主人 = 双子（空）。这是位置模型的依据，不是把 02 与 Asmoday 当成同一人。'
+    },
+    {
+      id: 3, num: '03', glyph: '雷', name: '雷之律者', en: 'Herrscher of Thunder',
+      short: '雷', label: '雷元素', labelHonkai: '雷律',
+      gs: '雷元素', gsEn: 'Electro',
+      gsFull: '雷元素 · Electro',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#c084fc',
+      side: 0, angle: 90 - 720 / 7, confidence: 3,
+      triRole: '中心 · 连接草 / 风 / 岩',
+      authority: '电与磁。',
+      why: '雷之律者的电磁权能对应雷元素；这是全表最直接的映射之一。在七元素的三环七点里，雷位于中心，连接草 / 风 / 岩三个内点。',
+      note: ''
+    },
+    {
+      id: 4, num: '04', glyph: '风', name: '风之律者', en: 'Herrscher of Wind',
+      short: '风', label: '风元素', labelHonkai: '风律',
+      gs: '风元素', gsEn: 'Anemo',
+      gsFull: '风元素 · Anemo',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#5eead4',
+      side: 0, angle: 90, confidence: 3,
+      triRole: '内三角 · 上环 × 右下环',
+      authority: '风与天候。',
+      why: '风之律者的风与天候对应风元素；直接的字面映射。元素三环中位于上环与右下环的交点（内三角）。',
+      note: ''
+    },
+    {
+      id: 5, num: '05', glyph: '冰', name: '冰之律者', en: 'Herrscher of Ice',
+      short: '冰', label: '冰元素', labelHonkai: '冰律',
+      gs: '冰元素', gsEn: 'Cryo',
+      gsFull: '冰元素 · Cryo',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#a5f3fc',
+      side: 0, angle: 90 - 2160 / 7, confidence: 3,
+      triRole: '外三角 · 右下环',
+      authority: '热力学（冷端）。',
+      why: '冰之律者的热力学冷端对应冰元素；直接。元素三环中位于右下环的外顶点。',
+      note: ''
+    },
+    {
+      id: 6, num: '06', glyph: '死', name: '死之律者', en: 'Herrscher of Death',
+      short: '死', label: '水元素', labelHonkai: '死律',
+      gs: '水元素', gsEn: 'Hydro',
+      gsFull: '水元素 · Hydro',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#60a5fa',
+      side: 0, angle: 90 - 1440 / 7, confidence: 1,
+      triRole: '外三角 · 左下环',
+      authority: '生与死；原子级重构与分解。',
+      why: '死之律者掌生与死、原子级重构；水元素在提瓦特是原初之海、灵魂与生命循环的溶剂。把「死」放在「水」上，是全表最弱的一环，保留它是为了守住 3-9 的七元素连续段。',
+      note: '弱映射。若改成 06 死→草、08 识→水，3-9 段仍成立，但语义更散。'
+    },
+    {
+      id: 7, num: '07', glyph: '炎', name: '炎之律者', en: 'Herrscher of Fire',
+      short: '炎', label: '火元素', labelHonkai: '炎律',
+      gs: '火元素', gsEn: 'Pyro',
+      gsFull: '火元素 · Pyro',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#fb923c',
+      side: 0, angle: 90 - 1800 / 7, confidence: 3,
+      triRole: '外三角 · 上环',
+      authority: '热与燃烧。',
+      why: '炎之律者的热与燃烧对应火元素；直接。元素三环中位于上环的外顶点。',
+      note: ''
+    },
+    {
+      id: 8, num: '08', glyph: '识', name: '识之律者', en: 'Herrscher of Sentience',
+      short: '识', label: '草元素', labelHonkai: '识律',
+      gs: '草元素', gsEn: 'Dendro',
+      gsFull: '草元素 · Dendro',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#86efac',
+      side: 0, angle: 90 - 1080 / 7, confidence: 2,
+      triRole: '内三角 · 上环 × 左下环',
+      authority: '意识、梦、幻觉、记忆。',
+      why: '识之律者掌意识、梦与记忆；草元素在提瓦特连接梦境、智慧与生命意识（纳西妲的梦）。这是语义映射，不是字面。',
+      note: '中强映射。识更接近「心」，草更接近「生长」，二者在「梦 / 生命意识」上重叠。'
+    },
+    {
+      id: 9, num: '09', glyph: '地', name: '星 / 大地之律者', en: 'Herrscher of Earth / Stars',
+      short: '地', label: '岩元素', labelHonkai: '地律',
+      gs: '岩元素', gsEn: 'Geo',
+      gsFull: '岩元素 · Geo',
+      cat: 'element', catName: '元素', layer: 4, size: 56, color: '#fbbf24',
+      side: 0, angle: 90 - 360 / 7, confidence: 3,
+      triRole: '内三角 · 左下环 × 右下环',
+      authority: '重力。',
+      why: '星 / 大地之律者掌重力；岩元素是大地、质量与引力的可见面。',
+      note: '前文明称「大地」，现文明称「星」，权能都落在重力。'
+    },
+    {
+      id: 10, num: '10', glyph: '配', name: '支配 / 军团之律者', en: 'Herrscher of Legion / Dominance',
+      short: '配', label: '空间之执政', labelHonkai: '支配律',
+      gs: '空间之执政', gsEn: 'Asmoday',
+      gsFull: '空间之执政 · Asmoday',
+      cat: 'shade', catName: '四影', layer: 3, size: 68, color: '#a78bfa',
+      side: 0, angle: 225, confidence: 2,
+      lineRole: '直线：10 支配 / 空 → 09 岩（地）',
+      lineShort: 'Asmoday · 直线→09 岩',
+      authority: '群体意识、权能夺取、异空间。',
+      why: '支配 / 军团之律者能连接群体意识、构造异空间、夺取权能；空间之执政 Asmoday 掌空间，也是开局夺走反主的那位「未知之神」。「支配」是空间权柄的病理化版本。',
+      note: '中映射。「空间」取异空间 / 维度义；Asmoday 的「空间」是更正式的执政权柄。'
+    },
+    {
+      id: 11, num: '11', glyph: '约', name: '约束之律者', en: 'Herrscher of Binding',
+      short: '约', label: '死之执政', labelHonkai: '约束律',
+      gs: '死之执政', gsEn: 'Ronova',
+      gsFull: '死之执政 · Ronova',
+      cat: 'shade', catName: '四影', layer: 3, size: 68, color: '#ff6b6b',
+      side: 0, angle: 315, confidence: 2,
+      lineRole: '中线：11 约束 / 死 → 03 雷',
+      lineShort: 'Ronova · 中线→03 雷',
+      authority: '能量无效化、封印。',
+      why: '约束之律者让能量无效化、封印；死之执政 Ronova 掌死亡与夜之国。约束是「让某物停下」的权柄，死亡是它的终点。',
+      note: '中映射。也可与 10 对调为「空间 / 死」；本文取「约束→死」因为「终结 = 约束」。'
+    },
+    {
+      id: 12, num: '12', glyph: '蚀', name: '侵蚀之律者', en: 'Herrscher of Corruption',
+      short: '蚀', label: '生之执政', labelHonkai: '侵蚀律',
+      gs: '生之执政', gsEn: 'Naberius',
+      gsFull: '生之执政 · Naberius',
+      cat: 'shade', catName: '四影', layer: 3, size: 68, color: '#7ee2a8',
+      side: 0, angle: 135, confidence: 2,
+      lineRole: '直线：12 侵蚀 / 生 → 08 草（识）',
+      lineShort: 'Naberius · 直线→08 草',
+      authority: '数据 / 生命侵蚀、复制、寄生。',
+      why: '侵蚀之律者腐蚀数据与生命、复制与寄生；生之执政 Naberius 掌生命与创造。侵蚀是「没有边界的生命」，是创造的反面。',
+      note: '中映射。也可与 11 对调；本文取「侵蚀→生」因为「畸变 = 生命」。'
+    },
+    {
+      id: 13, num: '13', glyph: '人', name: '人之律者', en: 'Herrscher of Human',
+      short: '人', label: '荧 · 双子', labelHonkai: '人律',
+      gs: '荧 / Lumine', gsEn: 'The Abyss Twin',
+      gsFull: '荧 · Lumine（双子）',
+      cat: 'twin', catName: '双子', layer: 2, size: 74, color: '#ff8fc7',
+      side: 1, angle: null, confidence: 2,
+      lineRole: '界间：四影 ↔ 七元素',
+      lineShort: 'Lumine · 4/7 界间',
+      authority: '人性、连接、始源。',
+      why: '人之律者（前文明第 13 席，Elysia）把「人性 / 始源 / 连接」放进律者 cycle；双子中的荧选择了深渊与人类世界。这里不把「人」放进四影层，而是让她在四影与七元素之间的界间轨道上旅行。',
+      note: '前文明第 13 席；现文明第 13 席为始源之律者（芽衣）。界间位置是结构安排，不是官方层级。'
+    },
+    {
+      id: 14, num: '14', glyph: '终', name: '终焉之律者', en: 'Herrscher of Finality',
+      short: '终', label: '时之执政', labelHonkai: '终律',
+      gs: '时之执政', gsEn: 'Istaroth',
+      gsFull: '时之执政 · Istaroth',
+      cat: 'shade', catName: '四影', layer: 3, size: 68, color: '#f5e6b8',
+      side: 0, angle: 45, confidence: 3,
+      lineRole: '直线：14 终焉 / 时 → 04 风',
+      lineShort: 'Istaroth · 直线→04 风',
+      authority: '时间、轮回、全部权能。',
+      why: '终焉之律者掌时间、轮回与全部权能；时之执政 Istaroth 掌时间。终焉是时间的终点，也是下一轮时间的起点。',
+      note: '四影映射中最强的一条：终焉 → 时。'
+    }
+  ];
+
+  const LAYER = {
+    1: { y: 0.0, r: 1.40, name: '1 · 天理', short: '天理' },
+    2: { y: 2.8, r: 0.0, name: '2 · 界间变量', short: '界间' },
+    3: { y: 5.6, r: 3.40, name: '4 · 四影', short: '四影' },
+    4: { y: -5.6, r: 7.00, name: '7 · 七元素', short: '七元素' }
+  };
+
+  const EDGES = [
+    { a: 1, b: 2, t: 'occlude' },
+    { a: 2, b: 10, t: 'occlude' },
+    { a: 11, b: 1, t: 'trunk' },
+    { a: 1, b: 3, t: 'trunk' },
+    { a: 10, b: 9, t: 'corr' },
+    { a: 12, b: 8, t: 'corr' },
+    { a: 14, b: 4, t: 'corr' }
+  ];
+
+  const SHADE_POS = {
+    11: { x: 0, z: 0 },
+    10: { x: 0, z: 3.90 },
+    12: { x: -3.03, z: -1.75 },
+    14: { x: 3.03, z: -1.75 }
+  };
+
+  const TRI_POS = {
+    7: { x: 0, z: -7.00 },
+    6: { x: -6.06, z: 3.50 },
+    5: { x: 6.06, z: 3.50 },
+    8: { x: -3.03, z: -1.75 },
+    4: { x: 3.03, z: -1.75 },
+    9: { x: 0, z: 3.90 },
+    3: { x: 0, z: 0 }
+  };
+
+  const TRI_LOOPS = [
+    { color: '#f2d184' },
+    { color: '#6fe3ff' },
+    { color: '#a78bfa' }
+  ];
+
+  const WHEEL = [
+    { t: '火', c: '#fb923c', r: 165 },
+    { t: '死', c: '#ff6b6b', r: 115 },
+    { t: '水', c: '#60a5fa', r: 165 },
+    { t: '空', c: '#a78bfa', r: 115 },
+    { t: '冰', c: '#a5f3fc', r: 165 },
+    { t: '草', c: '#86efac', r: 165 },
+    { t: '生', c: '#7ee2a8', r: 115 },
+    { t: '风', c: '#5eead4', r: 165 },
+    { t: '岩', c: '#fbbf24', r: 165 },
+    { t: '时', c: '#f5e6b8', r: 115 },
+    { t: '雷', c: '#c084fc', r: 165 }
+  ];
+
+  const TRI_ADJ = [
+    [7, 4], [4, 8], [8, 7],
+    [6, 8], [8, 9], [9, 6],
+    [5, 9], [9, 4], [4, 5],
+    [3, 8], [3, 4], [3, 9],
+    [13, 3]
+  ];
+
+  const SPECIAL = {
+    wc: { x: 0, y: -5.6, z: 0, color: '#c084fc' }
+  };
+
+  const NODE = new Map(NODES.map(n => [n.id, n]));
+  const ADJ = new Map();
+  EDGES.forEach(e => {
+    if (typeof e.a === 'number' && typeof e.b === 'number') {
+      if (!ADJ.has(e.a)) ADJ.set(e.a, new Set());
+      if (!ADJ.has(e.b)) ADJ.set(e.b, new Set());
+      ADJ.get(e.a).add(e.b);
+      ADJ.get(e.b).add(e.a);
+    }
+  });
+  TRI_ADJ.forEach(([a, b]) => {
+    if (!ADJ.has(a)) ADJ.set(a, new Set());
+    if (!ADJ.has(b)) ADJ.set(b, new Set());
+    ADJ.get(a).add(b);
+    ADJ.get(b).add(a);
+  });
+
+  /* ============================================================
+     Layout
+     ============================================================ */
+  function placeNodes() {
+    NODES.forEach(n => {
+      const L = LAYER[n.layer];
+      if (n.id === 2) {
+        n.pos = { x: 0, y: 2.80, z: 1.95 };
+        n.anchor = { x: -1.40, y: 2.90, z: 1.95 };
+        return;
+      }
+      if (n.id === 13) {
+        n.pos = { x: 3.25, y: 0.0, z: 3.25 };
+        n.anchor = { x: 4.35, y: 0.20, z: 3.85 };
+        return;
+      }
+      if (n.layer === 1) {
+        n.pos = { x: 0, y: L.y, z: 0 };
+        n.anchor = { x: 0, y: L.y + 1.05, z: 0 };
+      } else if (n.layer === 3) {
+        const p = SHADE_POS[n.id];
+        const y = n.id === 11 ? 5.80 : L.y;
+        n.pos = { x: p.x, y, z: p.z };
+        if (n.id === 11) n.anchor = { x: -1.35, y: y + 0.15, z: 0 };
+        else if (n.id === 10) n.anchor = { x: 1.35, y: y, z: p.z };
+        else if (n.id === 12) n.anchor = { x: p.x - 1.25, y: y, z: p.z };
+        else n.anchor = { x: p.x + 1.25, y: y, z: p.z };
+      } else {
+        const p = TRI_POS[n.id];
+        n.pos = { x: p.x, y: L.y, z: p.z };
+        if (n.id === 7) n.anchor = { x: 0, y: L.y + 0.25, z: p.z - 1.10 };
+        else if (n.id === 6) n.anchor = { x: p.x - 1.30, y: L.y, z: p.z + 0.55 };
+        else if (n.id === 5) n.anchor = { x: p.x + 1.30, y: L.y, z: p.z + 0.55 };
+        else if (n.id === 8) n.anchor = { x: p.x - 1.20, y: L.y + 0.18, z: p.z - 0.25 };
+        else if (n.id === 4) n.anchor = { x: p.x + 1.20, y: L.y + 0.18, z: p.z - 0.25 };
+        else if (n.id === 9) n.anchor = { x: 0, y: L.y, z: p.z + 1.18 };
+        else n.anchor = { x: 1.0, y: L.y, z: 0.45 };
+        if (n.id === 3) n.hideLabel = true;
+      }
+    });
+  }
+  placeNodes();
+
+  /* ============================================================
+     State
+     ============================================================ */
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('edges');
+  const ctx = canvas.getContext('2d');
+  const nodesLayer = document.getElementById('nodes');
+  const labelsLayer = document.getElementById('labels');
+  const railTrack = document.getElementById('railTrack');
+  const tableBody = document.getElementById('tableBody');
+  const detail = document.getElementById('detail');
+  const layerList = document.getElementById('layerList');
+  const labelModeEl = document.getElementById('labelMode');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DEFAULT_CAM = { yaw: -0.50, pitch: 0.50, zoom: 0.95, shift: 0 };
+  const cam = { ...DEFAULT_CAM };
+  let autoRotate = !reduceMotion;
+  let labelsVisible = true;
+  let showStructure = true;
+  let numbersOnly = false;
+  let labelMode = 'gs';
+  let selected = null;
+  let hovered = null;
+  let activeLayer = null;
+  let elementView = false;
+  let dragging = false;
+  let dragMoved = 0;
+  let lastPointer = { x: 0, y: 0 };
+  let lastInteract = 0;
+  let camTween = null;
+
+  let W = 0, H = 0, DPR = 1, CX = 0, CY = 0, BASE = 1, SCALE = 1;
+  let compact = false;
+  let stars = [];
+  let lastTime = performance.now();
+
+  const orbMap = new Map();
+  const labelMap = new Map();
+  const railMap = new Map();
+  const initialDetail = detail.innerHTML;
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const wrapPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const lerpPoint = (a, b, t) => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), z: lerp(a.z, b.z, t) });
+
+  /* ============================================================
+     Build DOM
+     ============================================================ */
+  function buildNodes() {
+    NODES.forEach(n => {
+      const orb = document.createElement('button');
+      orb.type = 'button';
+      orb.className = 'orb';
+      orb.dataset.id = String(n.id);
+      orb.dataset.cat = n.cat;
+      orb.dataset.layer = String(n.layer);
+      orb.style.setProperty('--c', n.color);
+      orb.style.setProperty('--size', n.size + 'px');
+      orb.setAttribute('aria-label', `${n.num} ${n.name}，对应${n.gs}`);
+      orb.title = `${n.num} ${n.name} · ${n.gs}`;
+      orb.innerHTML = `<span class="num">${n.num}</span><span class="glyph">${n.glyph}</span>`;
+      orb.addEventListener('click', ev => {
+        ev.stopPropagation();
+        selectNode(n.id);
+      });
+      orb.addEventListener('pointerenter', () => setHover(n.id));
+      orb.addEventListener('pointerleave', () => setHover(null));
+      orb.addEventListener('focus', () => setHover(n.id));
+      orb.addEventListener('blur', () => setHover(null));
+      nodesLayer.appendChild(orb);
+      orbMap.set(n.id, orb);
+
+      const label = document.createElement('button');
+      label.type = 'button';
+      label.className = 'node-label';
+      label.dataset.id = String(n.id);
+      label.dataset.layer = String(n.layer);
+      label.style.setProperty('--c', n.color);
+      label.textContent = labelText(n);
+      if (n.hideLabel) label.style.display = 'none';
+      label.setAttribute('aria-label', `${n.num} ${n.name}，${n.gs}`);
+      label.addEventListener('click', ev => {
+        ev.stopPropagation();
+        selectNode(n.id);
+      });
+      label.addEventListener('pointerenter', () => setHover(n.id));
+      label.addEventListener('pointerleave', () => setHover(null));
+      labelsLayer.appendChild(label);
+      labelMap.set(n.id, label);
+    });
+  }
+
+  function labelText(n) {
+    return labelMode === 'gs' ? n.label : n.labelHonkai;
+  }
+
+  function updateLabelTexts() {
+    NODES.forEach(n => {
+      const label = labelMap.get(n.id);
+      if (label) label.textContent = labelText(n);
+    });
+  }
+
+  function buildRail() {
+    [...NODES].sort((a, b) => a.id - b.id).forEach(n => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rail-item';
+      b.style.setProperty('--c', n.color);
+      b.dataset.id = String(n.id);
+      b.setAttribute('aria-label', `${n.num} ${n.name}`);
+      b.innerHTML = `<span class="rn">${n.num}</span><span class="rg">${n.glyph}</span>`;
+      b.addEventListener('click', () => {
+        selectNode(n.id);
+        if (window.innerWidth < 900) stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      railTrack.appendChild(b);
+      railMap.set(n.id, b);
+    });
+  }
+
+  function buildWheel() {
+    const g = document.getElementById('wheelMarks');
+    if (!g) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const cx = 210, cy = 210;
+    WHEEL.forEach((item, i) => {
+      const a = (-90 + i * 360 / WHEEL.length) * Math.PI / 180;
+      const x = cx + Math.cos(a) * item.r;
+      const y = cy + Math.sin(a) * item.r;
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', cx);
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', y);
+      line.setAttribute('stroke', item.c);
+      line.setAttribute('stroke-opacity', item.r === 165 ? '.34' : '.22');
+      line.setAttribute('stroke-width', item.r === 165 ? '1' : '.7');
+      if (item.r !== 165) line.setAttribute('stroke-dasharray', '2 4');
+      g.appendChild(line);
+
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x);
+      c.setAttribute('cy', y);
+      c.setAttribute('r', item.r === 165 ? '10' : '8');
+      c.setAttribute('fill', 'rgba(5,7,13,.88)');
+      c.setAttribute('stroke', item.c);
+      c.setAttribute('stroke-width', '1.2');
+      g.appendChild(c);
+
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('y', y + 3);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', item.c);
+      t.setAttribute('font-family', 'STSong, Songti SC, serif');
+      t.setAttribute('font-size', '8');
+      t.textContent = item.t;
+      g.appendChild(t);
+    });
+  }
+
+  function buildTable() {
+    [...NODES].sort((a, b) => a.id - b.id).forEach(n => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = String(n.id);
+      tr.style.setProperty('--c', n.color);
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-label', `${n.num} ${n.name}，对应${n.gs}`);
+      const confLabel = n.confidence >= 3 ? '强' : n.confidence === 2 ? '中' : '弱';
+      tr.innerHTML = `
+        <td class="cell-num"><span>${n.num}</span></td>
+        <td class="cell-name"><b>${n.name}</b><small>${n.en}</small></td>
+        <td>${n.authority}</td>
+        <td class="cell-gs">${n.gs}<small>${n.lineShort || n.gsEn}</small></td>
+        <td><span class="cat-pill" style="--c:${n.color}">${n.catName}</span></td>
+        <td><div class="conf" style="--c:${n.color}">
+          <i class="${n.confidence >= 1 ? 'on' : ''}"></i>
+          <i class="${n.confidence >= 2 ? 'on' : ''}"></i>
+          <i class="${n.confidence >= 3 ? 'on' : ''}"></i>
+          <span>${confLabel}</span>
+        </div></td>`;
+      tr.addEventListener('click', () => {
+        selectNode(n.id);
+        document.getElementById('top').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      tr.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          selectNode(n.id);
+          document.getElementById('top').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      tableBody.appendChild(tr);
+    });
+  }
+
+  /* ============================================================
+     Detail panel
+     ============================================================ */
+  function renderDetail(n) {
+    const confLabel = n.confidence >= 3 ? '强 · 字面 / 权能直接' : n.confidence === 2 ? '中 · 语义 / 结构映射' : '弱 · 保留段位，语义有争议';
+    const dots = [1, 2, 3].map(i => `<i class="${i <= n.confidence ? 'on' : ''}"></i>`).join('');
+    const lineLabel = n.id === 1 ? '界面 / Interface' : n.id === 2 ? '遮蔽线 / Occlusion' : n.id === 13 ? '界间 / Between' : '四影线 / Line';
+    detail.classList.remove('detail-empty');
+    detail.innerHTML = `
+      <div class="detail-kicker">
+        <span>NODE ${n.num} / 14</span>
+        <span class="cat" style="--c:${n.color}">${n.catName}</span>
+      </div>
+      <h2 class="detail-name" style="--c:${n.color}">${n.name}</h2>
+      <div class="detail-en">${n.en}</div>
+      <div class="detail-gs" style="--c:${n.color}">
+        <span>提瓦特对应 / Teyvat</span>
+        <b>${n.gsFull}</b>
+      </div>
+      ${n.lineRole ? `<div class="tri-role" style="--c:${n.color}"><span>${lineLabel}</span><b>${n.lineRole}</b></div>` : ''}
+      ${n.triRole ? `<div class="tri-role" style="--c:${n.color}"><span>三环位 / Triquetra</span><b>${n.triRole}</b></div>` : ''}
+      <div class="detail-block">
+        <h3>权能 / Authority</h3>
+        <p>${n.authority}</p>
+      </div>
+      <div class="detail-block">
+        <h3>为什么是它 / Why</h3>
+        <p>${n.why}</p>
+      </div>
+      <div class="detail-meta">
+        <div><span>结构层 / Layer</span><b>${LAYER[n.layer].name}</b></div>
+        <div><span>映射强度 / Fit</span><b><span class="conf" style="--c:${n.color};display:inline-flex">${dots}</span> ${confLabel}</b></div>
+      </div>
+      ${n.note ? `<p class="detail-note">${n.note}</p>` : ''}
+      <button class="btn detail-back" type="button" data-action="clear">← 返回总览</button>
+    `;
+    detail.scrollTop = 0;
+  }
+
+  function renderOverview() {
+    detail.classList.add('detail-empty');
+    detail.innerHTML = initialDetail;
+  }
+
+  function selectNode(id) {
+    if (elementView && NODE.get(id).layer !== 4) {
+      elementView = false;
+      stage.classList.remove('element-view');
+      activeLayer = null;
+      updateLayerChips();
+      tweenCamera(DEFAULT_CAM, 680);
+    }
+    selected = id;
+    renderDetail(NODE.get(id));
+    updateClasses();
+  }
+
+  function clearSelection() {
+    selected = null;
+    hovered = null;
+    renderOverview();
+    updateClasses();
+  }
+
+  detail.addEventListener('click', ev => {
+    const btn = ev.target.closest('[data-action="clear"]');
+    if (btn) clearSelection();
+  });
+
+  /* ============================================================
+     Highlight state
+     ============================================================ */
+  function setHover(id) {
+    hovered = id;
+    updateClasses();
+  }
+
+  function updateClasses() {
+    const focus = selected;
+    const neighbors = new Set();
+    if (focus != null) {
+      neighbors.add(focus);
+      const set = ADJ.get(focus);
+      if (set) set.forEach(x => neighbors.add(x));
+    }
+
+    NODES.forEach(n => {
+      const orb = orbMap.get(n.id);
+      const label = labelMap.get(n.id);
+      const isSelected = selected === n.id;
+      const isDim = focus != null && !neighbors.has(n.id);
+      const isMuted = activeLayer != null && n.layer !== activeLayer;
+
+      if (orb) {
+        orb.classList.toggle('is-selected', isSelected);
+        orb.classList.toggle('is-dim', isDim);
+        orb.classList.toggle('is-muted', isMuted);
+      }
+      if (label) {
+        label.classList.toggle('is-selected', isSelected);
+        label.classList.toggle('is-dim', isDim);
+        label.classList.toggle('is-muted', isMuted);
+      }
+      const rail = railMap.get(n.id);
+      if (rail) rail.classList.toggle('active', isSelected);
+    });
+  }
+
+  /* ============================================================
+     Canvas sizing + camera
+     ============================================================ */
+  function resize() {
+    const rect = stage.getBoundingClientRect();
+    W = Math.max(320, Math.round(rect.width));
+    H = Math.max(360, Math.round(rect.height));
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    CX = W / 2;
+    CY = H * 0.50;
+    BASE = Math.min(W / 16.2, H / 13.8);
+    compact = W < 720;
+    makeStars();
+    applySizes();
+  }
+
+  function applySizes() {
+    NODES.forEach(n => {
+      const orb = orbMap.get(n.id);
+      if (!orb) return;
+      const compactScale = n.layer === 2 || n.layer === 3 ? 0.68 : 0.76;
+      const s = Math.round(n.size * (compact ? compactScale : 1));
+      orb.style.setProperty('--size', s + 'px');
+    });
+  }
+
+  function makeStars() {
+    const count = compact ? 90 : 170;
+    stars = Array.from({ length: count }, (_, i) => {
+      const r = Math.random();
+      return {
+        x: Math.random(),
+        y: Math.random(),
+        r: r < 0.82 ? 0.45 + Math.random() * 0.6 : 1.0 + Math.random() * 0.9,
+        a: 0.16 + Math.random() * 0.48,
+        p: Math.random() * Math.PI * 2,
+        c: i % 13 === 0 ? '#f2d184' : i % 7 === 0 ? '#6fe3ff' : '#dfe9ff'
+      };
+    });
+  }
+
+  function project(p) {
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+    let x = p.x * cy - p.z * sy;
+    let z = p.x * sy + p.z * cy;
+    const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    let y = p.y * cp - z * sp;
+    z = p.y * sp + z * cp;
+    const persp = 26 / (26 + z);
+    return {
+      x: CX + x * SCALE * persp,
+      y: CY + (cam.shift || 0) - y * SCALE * persp,
+      z,
+      s: persp
+    };
+  }
+
+  function pointOf(ref) {
+    if (typeof ref === 'number') return NODE.get(ref).pos;
+    return SPECIAL[ref];
+  }
+
+  function colorOf(ref) {
+    if (typeof ref === 'number') return NODE.get(ref).color;
+    return SPECIAL[ref].color;
+  }
+
+  const TREFOIL_SCALE = 7.0 / 3;
+  function trefoilPoint(u) {
+    const t = u * Math.PI * 2;
+    const X = Math.sin(t) + 2 * Math.sin(2 * t);
+    const Y = Math.cos(t) - 2 * Math.cos(2 * t);
+    return { x: X * TREFOIL_SCALE, y: LAYER[4].y, z: Y * TREFOIL_SCALE };
+  }
+
+  function trefoilPath() {
+    ctx.beginPath();
+    for (let i = 0; i <= 300; i++) {
+      const p = project(trefoilPoint(i / 300));
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+  }
+
+  /* ============================================================
+     Canvas drawing
+     ============================================================ */
+  function drawStars(t) {
+    ctx.save();
+    for (const s of stars) {
+      const tw = 0.5 + 0.5 * Math.sin(t * 0.55 + s.p);
+      const px = s.x * W + Math.sin(t * 0.07 + s.p) * 2.2;
+      const py = s.y * H + Math.cos(t * 0.05 + s.p) * 1.6;
+      ctx.globalAlpha = s.a * (0.45 + 0.55 * tw);
+      ctx.fillStyle = s.c;
+      ctx.beginPath();
+      ctx.arc(px, py, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawWorldCircle(center, radius, color, dash, width) {
+    const pts = [];
+    for (let i = 0; i <= 64; i++) {
+      const a = (i / 64) * Math.PI * 2;
+      pts.push(project({ x: center.x + Math.cos(a) * radius, y: center.y, z: center.z + Math.sin(a) * radius }));
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width || 0.8;
+    if (dash) ctx.setLineDash(dash);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPolygon(ids, fill, stroke, dash) {
+    const pts = ids.map(id => project(pointOf(id)));
+    if (!pts.length) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1;
+      if (dash) ctx.setLineDash(dash);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawTrefoilBand() {
+    const elementHot = selected != null && NODE.get(selected).layer === 4;
+    const layerHot = activeLayer == null || activeLayer === 4;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    trefoilPath();
+    ctx.globalAlpha = layerHot ? 0.9 : 0.34;
+    ctx.strokeStyle = 'rgba(3,5,11,.80)';
+    ctx.lineWidth = 22;
+    ctx.shadowColor = 'rgba(0,0,0,.6)';
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+
+    trefoilPath();
+    ctx.globalAlpha = layerHot ? (elementHot ? 0.76 : 0.48) : 0.22;
+    ctx.strokeStyle = elementHot ? 'rgba(255,236,190,.62)' : 'rgba(154,180,210,.40)';
+    ctx.lineWidth = elementHot ? 16 : 13.5;
+    ctx.shadowColor = elementHot ? '#f2d184' : 'rgba(150,190,255,.26)';
+    ctx.shadowBlur = elementHot ? 24 : 16;
+    ctx.stroke();
+
+    trefoilPath();
+    ctx.globalAlpha = layerHot ? (elementHot ? 0.86 : 0.66) : 0.28;
+    const grad = ctx.createLinearGradient(CX - 360, 0, CX + 360, 0);
+    grad.addColorStop(0, '#6fe3ff');
+    grad.addColorStop(0.5, '#e8c97a');
+    grad.addColorStop(1, '#a78bfa');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = elementHot ? 1.9 : 1.45;
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function conePath(apex, baseY, radius, segments = 56) {
+    const pa = project(apex);
+    ctx.beginPath();
+    ctx.moveTo(pa.x, pa.y);
+    for (let i = 0; i <= segments; i++) {
+      const a = (i / segments) * Math.PI * 2;
+      const p = project({ x: Math.cos(a) * radius, y: baseY, z: Math.sin(a) * radius });
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+  }
+
+  function drawCones() {
+    if (elementView) return;
+    const apex = { x: 0, y: 0, z: 0 };
+    const pa = project(apex);
+    const shadowBase = project({ x: 0, y: LAYER[3].y, z: 0 });
+    const lightBase = project({ x: 0, y: LAYER[4].y, z: 0 });
+
+    ctx.save();
+    // upper shadow cone
+    conePath(apex, LAYER[3].y, 4.9);
+    let g = ctx.createLinearGradient(pa.x, pa.y, shadowBase.x, shadowBase.y);
+    g.addColorStop(0, 'rgba(160,140,220,.006)');
+    g.addColorStop(1, 'rgba(60,45,100,.032)');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150,130,210,.08)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // lower light cone
+    conePath(apex, LAYER[4].y, 7.5);
+    g = ctx.createLinearGradient(pa.x, pa.y, lightBase.x, lightBase.y);
+    g.addColorStop(0, 'rgba(255,246,214,.045)');
+    g.addColorStop(0.52, 'rgba(232,201,122,.014)');
+    g.addColorStop(1, 'rgba(94,234,212,.012)');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(232,201,122,.09)';
+    ctx.stroke();
+
+    // 11 directions: 7 light rays down, 3 shadow rays up (the 4th is the central trunk)
+    NODES.filter(n => n.layer === 4).forEach(n => {
+      const p = project(n.pos);
+      ctx.strokeStyle = n.color;
+      ctx.globalAlpha = 0.12;
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    NODES.filter(n => n.layer === 3 && n.id !== 11).forEach(n => {
+      const p = project(n.pos);
+      ctx.strokeStyle = n.color;
+      ctx.globalAlpha = 0.11;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawPrismRing() {
+    const colors = ['#5eead4', '#fbbf24', '#c084fc', '#86efac', '#60a5fa', '#fb923c', '#a5f3fc'];
+    const radius = 1.55;
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 8;
+    colors.forEach((color, i) => {
+      const a0 = -Math.PI / 2 + (i / 7) * Math.PI * 2;
+      const a1 = -Math.PI / 2 + ((i + 1) / 7) * Math.PI * 2;
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color;
+      ctx.globalAlpha = 0.62;
+      ctx.beginPath();
+      for (let k = 0; k <= 10; k++) {
+        const a = a0 + (a1 - a0) * (k / 10);
+        const p = project({ x: Math.cos(a) * radius, y: 0, z: Math.sin(a) * radius });
+        if (k === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawStructure(t) {
+    if (showStructure) drawCones();
+    drawTrefoilBand();
+    if (!showStructure) return;
+
+    ctx.save();
+    if (elementView) ctx.globalAlpha = 0.24;
+
+    // interface: prism ring + Lumine's interstitial orbit
+    if (!elementView) {
+      drawWorldCircle({ x: 0, y: 0, z: 0 }, 4.60, 'rgba(255,143,199,.28)', [3, 6], 1.0);
+      drawPrismRing();
+    }
+
+    // layer ladder on the left: 4 影 → 1 理 → 7 光
+    if (!compact) {
+      ctx.save();
+      ctx.font = '9px "Cascadia Code", Consolas, monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      for (const l of [3, 1, 4]) {
+        const y = project({ x: 0, y: LAYER[l].y, z: 0 }).y;
+        ctx.fillStyle = 'rgba(232,201,122,.42)';
+        const label = l === 3 ? '4' : l === 1 ? '1' : '7';
+        ctx.fillText(label, 16, y);
+        ctx.fillStyle = 'rgba(255,255,255,.20)';
+        ctx.fillText(LAYER[l].short, 27, y);
+        ctx.strokeStyle = 'rgba(232,201,122,.12)';
+        ctx.beginPath();
+        ctx.moveTo(60, y);
+        ctx.lineTo(82, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function edgeAlpha(type, focusEdge, dimmed) {
+    let a = type === 'trunk' ? 0.55
+      : type === 'occlude' ? 0.52
+      : type === 'corr' ? 0.34
+      : type === 'tri' ? 0.46
+      : type === 'spoke' ? 0.16
+      : type === 'ring' ? 0.26
+      : type === 'branch' ? 0.34
+      : type === 'diag' ? 0.18
+      : 0.13;
+    if (focusEdge) a = type === 'tri' ? 0.96 : 0.92;
+    if (dimmed) a *= 0.13;
+    return a;
+  }
+
+  function drawEdges(t) {
+    const focus = selected;
+    const focusEdges = new Set();
+    if (focus != null) {
+      EDGES.forEach((e, i) => {
+        if (e.a === focus || e.b === focus) focusEdges.add(i);
+      });
+    }
+
+    EDGES.forEach((e, i) => {
+      const pa = project(pointOf(e.a));
+      const pb = project(pointOf(e.b));
+      const ca = colorOf(e.a), cb = colorOf(e.b);
+      const isFocus = focusEdges.has(i);
+      const dimmed = focus != null && !isFocus;
+      const layerA = typeof e.a === 'number' ? NODE.get(e.a).layer : e.t === 'trunk' ? 3 : 4;
+      const layerB = typeof e.b === 'number' ? NODE.get(e.b).layer : e.t === 'trunk' ? 1 : 4;
+      if (elementView && (layerA !== 4 || layerB !== 4)) return;
+      const layerMuted = activeLayer != null && layerA !== activeLayer && layerB !== activeLayer;
+      const alpha = edgeAlpha(e.t, isFocus, dimmed || layerMuted);
+
+      if (alpha < 0.012) return;
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = alpha;
+
+      let width = e.t === 'trunk' ? 2.2 : e.t === 'occlude' ? 1.65 : e.t === 'corr' ? 1.25 : e.t === 'spoke' ? 0.95 : e.t === 'ring' ? 1.05 : e.t === 'branch' ? 1.45 : e.t === 'diag' ? 0.9 : 0.85;
+      if (isFocus) width += 0.9;
+
+      let grad;
+      if (e.t === 'trunk') {
+        grad = ctx.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
+        grad.addColorStop(0, '#f2d184');
+        grad.addColorStop(0.55, '#b9d9ff');
+        grad.addColorStop(1, '#5eead4');
+      } else {
+        grad = ctx.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
+        grad.addColorStop(0, ca);
+        grad.addColorStop(1, cb);
+      }
+
+      if (isFocus || e.t === 'trunk') {
+        ctx.shadowColor = isFocus ? '#f2d184' : ca;
+        ctx.shadowBlur = isFocus ? 16 : 10;
+      } else if (e.t === 'corr') {
+        ctx.shadowColor = cb;
+        ctx.shadowBlur = 7;
+      } else if (e.t === 'occlude') {
+        ctx.shadowColor = '#f2d184';
+        ctx.shadowBlur = 10;
+      }
+
+      if (e.t === 'trunk') {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = width + 4;
+        ctx.globalAlpha = alpha * 0.12;
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+        ctx.globalAlpha = alpha;
+      }
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = width;
+      if (e.t === 'diag') ctx.setLineDash([3, 7]);
+      if (e.t === 'spoke') ctx.setLineDash([2, 5]);
+      if (e.t === 'occlude') ctx.setLineDash([4, 5]);
+      if (e.t === 'trunk') ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+
+      if (isFocus) {
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = 'rgba(255,255,255,.75)';
+        ctx.lineWidth = 0.65;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    });
+  }
+
+  function drawGlowPoint(p, color, size) {
+    const pr = project(p);
+    const r = Math.max(1.1, size * pr.s);
+    const g = ctx.createRadialGradient(pr.x, pr.y, 0, pr.x, pr.y, r * 5);
+    g.addColorStop(0, 'rgba(255,255,255,.95)');
+    g.addColorStop(0.22, color);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(pr.x, pr.y, r * 5, 0, Math.PI * 2);
+    ctx.fill();
+    return pr;
+  }
+
+  function drawParticles(t) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    // trunk flow
+    const bottom = SPECIAL.wc;
+    const top = { x: 0, y: 5.80, z: 0 };
+    for (let i = 0; i < 5; i++) {
+      const u = (t * 0.075 + i / 5) % 1;
+      const p = lerpPoint(bottom, top, u);
+      p.x += Math.sin(u * 9 + t * 1.1 + i) * 0.12;
+      p.z += Math.cos(u * 7 + t * 0.9 + i) * 0.12;
+      drawGlowPoint(p, i % 2 === 0 ? '#f2d184' : '#6fe3ff', 1.9);
+    }
+
+    // triquetra flow: three sparks along the knot
+    TRI_LOOPS.forEach((loop, i) => {
+      const u = (t * 0.045 + i / 3) % 1;
+      drawGlowPoint(trefoilPoint(u), loop.color, 1.8);
+    });
+
+    // Lumine's interstitial orbit
+    if (!elementView) {
+      const a = t * 0.16 + 0.80;
+      drawGlowPoint({ x: Math.cos(a) * 4.6, y: 0, z: Math.sin(a) * 4.6 }, '#ff8fc7', 1.6);
+    }
+
+    // selected edge flow
+    if (selected != null) {
+      EDGES.forEach((e, i) => {
+        if (e.a !== selected && e.b !== selected) return;
+        for (let k = 0; k < 2; k++) {
+          const u = (t * 0.28 + k * 0.5 + i * 0.08) % 1;
+          const p = lerpPoint(pointOf(e.a), pointOf(e.b), u);
+          drawGlowPoint(p, '#f2d184', 1.7);
+        }
+      });
+    }
+
+    // central world glow
+    const wc = project(SPECIAL.wc);
+    const rg = ctx.createRadialGradient(wc.x, wc.y, 0, wc.x, wc.y, Math.max(40, 90 * wc.s));
+    rg.addColorStop(0, 'rgba(192,132,252,.20)');
+    rg.addColorStop(0.45, 'rgba(192,132,252,.06)');
+    rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg;
+    ctx.beginPath();
+    ctx.arc(wc.x, wc.y, Math.max(40, 90 * wc.s), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function updateDOM() {
+    stage.dataset.pitch = cam.pitch.toFixed(3);
+    stage.dataset.yaw = cam.yaw.toFixed(3);
+    stage.dataset.zoom = cam.zoom.toFixed(3);
+    NODES.forEach(n => {
+      const p = project(n.pos);
+      const orb = orbMap.get(n.id);
+      const label = labelMap.get(n.id);
+      if (!orb || !label) return;
+
+      const sc = clamp(p.s * 0.97, 0.78, 1.18);
+      orb.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%) scale(${sc})`;
+      orb.style.zIndex = String(1000 - Math.round(p.z * 44));
+
+      const anchor = project(n.anchor);
+      const lx = clamp(anchor.x, compact ? 34 : 44, W - (compact ? 34 : 44));
+      const ly = clamp(anchor.y, 22, H - 22);
+      label.style.transform = `translate(${lx}px, ${ly}px) translate(-50%, -50%)`;
+      label.style.zIndex = String(1001 - Math.round(anchor.z * 44));
+    });
+  }
+
+  function render(t) {
+    SCALE = BASE * cam.zoom;
+    const tt = reduceMotion ? 0 : t;
+    ctx.clearRect(0, 0, W, H);
+    drawStars(tt);
+    drawStructure(tt);
+    drawEdges(tt);
+    drawParticles(tt);
+    updateDOM();
+  }
+
+  /* ============================================================
+     Camera animation
+     ============================================================ */
+  function tweenCamera(to, dur = 780) {
+    camTween = {
+      t0: performance.now(),
+      dur,
+      from: { yaw: cam.yaw, pitch: cam.pitch, zoom: cam.zoom, shift: cam.shift || 0 },
+      to: { ...to, shift: to.shift || 0 }
+    };
+  }
+
+  function updateLayerChips() {
+    [...layerList.querySelectorAll('.layer-chip')].forEach(x => {
+      const on = Number(x.dataset.layer) === activeLayer;
+      x.classList.toggle('active', on);
+      x.setAttribute('aria-pressed', String(on));
+    });
+  }
+
+  function resetView() {
+    if (elementView) {
+      elementView = false;
+      stage.classList.remove('element-view');
+      activeLayer = null;
+      updateLayerChips();
+      updateClasses();
+    }
+    tweenCamera(DEFAULT_CAM, 680);
+  }
+
+  function viewElements() {
+    if (elementView) {
+      resetView();
+      return;
+    }
+    elementView = true;
+    stage.classList.add('element-view');
+    activeLayer = 4;
+    updateLayerChips();
+    updateClasses();
+    tweenCamera({ yaw: 0, pitch: 0.86, zoom: 1.08, shift: -Math.min(160, H * 0.18) }, 900);
+  }
+
+  function stepTween(now) {
+    if (!camTween) return;
+    const k = clamp((now - camTween.t0) / camTween.dur, 0, 1);
+    const e = 1 - Math.pow(1 - k, 3);
+    cam.yaw = lerp(camTween.from.yaw, camTween.to.yaw, e);
+    cam.pitch = lerp(camTween.from.pitch, camTween.to.pitch, e);
+    cam.zoom = lerp(camTween.from.zoom, camTween.to.zoom, e);
+    cam.shift = lerp(camTween.from.shift || 0, camTween.to.shift || 0, e);
+    if (k >= 1) camTween = null;
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+    stepTween(now);
+    if (autoRotate && !dragging && !camTween && now - lastInteract > 1600 && !reduceMotion) {
+      cam.yaw = wrapPi(cam.yaw + dt * 0.12);
+    }
+    render(now / 1000);
+    requestAnimationFrame(frame);
+  }
+
+  /* ============================================================
+     Interactions
+     ============================================================ */
+  stage.addEventListener('pointerdown', ev => {
+    if (ev.target.closest('.orb, .node-label, .zoom-controls')) return;
+    dragging = true;
+    dragMoved = 0;
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    lastInteract = performance.now();
+    stage.setPointerCapture(ev.pointerId);
+    stage.style.cursor = 'grabbing';
+  });
+
+  stage.addEventListener('pointermove', ev => {
+    if (!dragging) return;
+    const dx = ev.clientX - lastPointer.x;
+    const dy = ev.clientY - lastPointer.y;
+    dragMoved += Math.abs(dx) + Math.abs(dy);
+    cam.yaw = wrapPi(cam.yaw + dx * 0.0062);
+    cam.pitch = wrapPi(cam.pitch + dy * 0.0042);
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    lastInteract = performance.now();
+  });
+
+  function endDrag(ev) {
+    if (!dragging) return;
+    dragging = false;
+    lastInteract = performance.now();
+    stage.style.cursor = 'grab';
+    if (stage.hasPointerCapture && stage.hasPointerCapture(ev.pointerId)) {
+      stage.releasePointerCapture(ev.pointerId);
+    }
+  }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerleave', ev => {
+    if (dragging && !stage.hasPointerCapture?.(ev.pointerId)) endDrag(ev);
+  });
+
+  stage.addEventListener('wheel', ev => {
+    ev.preventDefault();
+    const factor = Math.exp(-ev.deltaY * 0.0011);
+    cam.zoom = clamp(cam.zoom * factor, 0.72, 1.5);
+    lastInteract = performance.now();
+  }, { passive: false });
+
+  stage.addEventListener('dblclick', ev => {
+    if (ev.target.closest('.orb, .node-label, .zoom-controls')) return;
+    resetView();
+  });
+
+  document.getElementById('resetView').addEventListener('click', resetView);
+  document.getElementById('zoomIn').addEventListener('click', () => {
+    cam.zoom = clamp(cam.zoom * 1.16, 0.72, 1.5);
+    lastInteract = performance.now();
+  });
+  document.getElementById('zoomOut').addEventListener('click', () => {
+    cam.zoom = clamp(cam.zoom * 0.86, 0.72, 1.5);
+    lastInteract = performance.now();
+  });
+  document.getElementById('viewElements').addEventListener('click', viewElements);
+
+  const tAuto = document.getElementById('toggleAuto');
+  const tLabels = document.getElementById('toggleLabels');
+  const tStructure = document.getElementById('toggleStructure');
+  const tNumbers = document.getElementById('toggleNumbers');
+
+  tAuto.addEventListener('click', () => {
+    autoRotate = !autoRotate;
+    tAuto.setAttribute('aria-pressed', String(autoRotate));
+    lastInteract = performance.now();
+  });
+
+  tLabels.addEventListener('click', () => {
+    labelsVisible = !labelsVisible;
+    tLabels.setAttribute('aria-pressed', String(labelsVisible));
+    stage.classList.toggle('labels-off', !labelsVisible);
+  });
+
+  tStructure.addEventListener('click', () => {
+    showStructure = !showStructure;
+    tStructure.setAttribute('aria-pressed', String(showStructure));
+  });
+
+  tNumbers.addEventListener('click', () => {
+    numbersOnly = !numbersOnly;
+    tNumbers.setAttribute('aria-pressed', String(numbersOnly));
+    stage.classList.toggle('numbers-only', numbersOnly);
+  });
+
+  labelModeEl.addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-mode]');
+    if (!b) return;
+    labelMode = b.dataset.mode;
+    [...labelModeEl.querySelectorAll('button')].forEach(x => {
+      x.classList.toggle('active', x === b);
+      x.setAttribute('aria-pressed', String(x === b));
+    });
+    updateLabelTexts();
+  });
+
+  layerList.addEventListener('click', ev => {
+    const b = ev.target.closest('.layer-chip');
+    if (!b) return;
+    const layer = Number(b.dataset.layer);
+    const wasElementView = elementView;
+    elementView = false;
+    stage.classList.remove('element-view');
+    activeLayer = activeLayer === layer ? null : layer;
+    updateLayerChips();
+    updateClasses();
+    if (wasElementView) tweenCamera(DEFAULT_CAM, 680);
+  });
+
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') clearSelection();
+  });
+
+  window.addEventListener('resize', () => {
+    resize();
+  });
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => resize()).observe(stage);
+  }
+
+  /* ============================================================
+     Boot
+     ============================================================ */
+  buildNodes();
+  buildRail();
+  buildWheel();
+  buildTable();
+  updateLayerChips();
+  resize();
+  updateClasses();
+  if (reduceMotion) tAuto.setAttribute('aria-pressed', 'false');
+  renderOverview();
+  requestAnimationFrame(frame);
+
+  // gentle first-run focus: rotate in from a wider angle
+  if (!reduceMotion) {
+    cam.yaw = -0.68;
+    cam.pitch = 0.58;
+    camTween = {
+      t0: performance.now() + 250,
+      dur: 1300,
+      from: { yaw: -0.68, pitch: 0.58, zoom: 0.96, shift: 0 },
+      to: { ...DEFAULT_CAM }
+    };
+  }
+})();
+</script>
+</body>
+</html>
