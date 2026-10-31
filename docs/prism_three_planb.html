@@ -257,7 +257,27 @@
   }
   html.embed .embed-bar .btn{padding:5px 9px;font-size:8px;letter-spacing:.08em;border-radius:7px}
   html.embed .embed-bar .state{font-size:8px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
-  html.embed .embed-bar .state.on{color:#cfc2ff}</style>
+  html.embed .embed-bar .state.on{color:#cfc2ff}
+  /* 光谱标尺：七元素 = 七个波长（嵌入模式也保留，它是七色唯一的落点） */
+  .spectrum-legend{
+    align-items:flex-end;gap:4px;max-width:360px;text-align:right;
+  }
+  .spectrum-legend .spectrum-title{font-size:8px;letter-spacing:.14em;color:rgba(141,153,168,.8)}
+  .spectrum-legend .spectrum-row{
+    display:flex;align-items:center;gap:5px;font-size:8px;letter-spacing:.04em;
+    color:rgba(160,172,188,.85);flex-wrap:wrap;justify-content:flex-end;
+  }
+  .spectrum-legend .spectrum-row i{
+    display:inline-block;width:8px;height:8px;border-radius:2px;margin-left:5px;
+    box-shadow:0 0 6px currentColor;
+  }
+  .spectrum-legend .spectrum-row i:first-child{margin-left:0}
+  .spectrum-legend .dim-row{opacity:.6;font-size:7.5px}
+  .spectrum-legend .dim-row i.sun{background:#ffe3a3;border-radius:50%}
+  .spectrum-legend .dim-row i.ecl{background:#05060a;border:1px solid rgba(255,214,150,.8);border-radius:50%}
+  .spectrum-legend .dim-row i.th{background:#7B66E2;border-radius:50%}
+  html.embed .legend.spectrum-legend{display:flex!important;right:14px;bottom:14px;opacity:.92}
+  html.embed .legend.spectrum-legend .spectrum-title{display:none}</style>
 <script>if (new URLSearchParams(location.search).has('visual')) document.documentElement.classList.add('embed');</script>
 </head>
 <body>
@@ -320,11 +340,6 @@
     <input id="brightC" type="range" min="0" max="2.5" step="0.01" value="1.15">
   </label>
 
-  <div class="source-head">SPECTRUM / 色带模型</div>
-  <div class="row">
-    <button class="btn active" id="bandPhys" type="button" aria-pressed="true" title="严格物理：每条环只显示 46.7° 的真实衍射光谱弧，颜色 = 波长">物理色带</button>
-    <button class="btn" id="bandSymbolic" type="button" aria-pressed="false" title="象征分区：七元素色按角度分段，便于读图">象征分区</button>
-  </div>
 
   <div class="source-head">PALETTE / 元素配色</div>
   <div class="row">
@@ -340,14 +355,21 @@
     <label><input id="showLabels" type="checkbox" checked> 标签</label>
     <label><input id="showGrooves" type="checkbox" checked> 刻线</label>
   </div>
-  <p class="note">光影是叙事化模型：不做严格光线追迹。<code>底色七色 = 光栅预设分区</code>，<code>雷 = 闪耀高亮</code>，几何参数可调，不声称物理精确。</p>
+  <p class="note">三环 = 三月各自光栅的<code>罗兰圆</code>（R = 2ρ，半径就是环半径）。环上只有可见光张角那一段被照亮，颜色由 <code>d(sinα+sinβ)=mλ</code> 给出；交点是两条罗兰圆的交点，<code>雷 = 闪耀像点扫过交点</code>。</p>
 </aside>
 
-<div class="legend" aria-hidden="true">
-  <span><i class="sun"></i>天理 · 被遮挡的点光源</span>
-  <span><i class="ecl"></i>日食阴影</span>
-  <span><i></i>光栅刻线（径向）</span>
-  <span><i class="th"></i>雷色闪耀</span>
+<div class="legend spectrum-legend" aria-label="七元素对应波长">
+  <span class="spectrum-title">七元素 = 七个波长</span>
+  <span class="spectrum-row">
+    <i style="background:#EC4923"></i>火 677
+    <i style="background:#CC9046"></i>岩 634
+    <i style="background:#66AD16"></i>草 559
+    <i style="background:#359697"></i>风 490
+    <i style="background:#35AACC"></i>冰 483
+    <i style="background:#498FCC"></i>水 476
+    <i style="background:#6957C2"></i>雷 453
+  </span>
+  <span class="spectrum-row dim-row"><i class="sun"></i>天理 <i class="ecl"></i>遮挡体 <i class="th"></i>闪耀像点</span>
 </div>
 
 <div class="embed-bar" id="embedBar">
@@ -4473,8 +4495,7 @@ window.M3 = {
   const embedFreezeBtn = document.getElementById('embedFreeze');
   const embedStepBtn = document.getElementById('embedStep');
   const embedStateEl = document.getElementById('embedState');
-  const bandPhysBtn = document.getElementById('bandPhys');
-  const bandSymBtn = document.getElementById('bandSymbolic');
+
   const labelsCheck = document.getElementById('showLabels');
   const groovesCheck = document.getElementById('showGrooves');
   const panelEl = document.querySelector('.panel');
@@ -4892,7 +4913,8 @@ window.M3 = {
         base.rotation.x = -Math.PI / 2;
         base.position.set(ring.x, RING_Y - 0.004, ring.z);
         ringGroup.add(base);
-        physRings.push(buildPhysArc(ring, i * 2.0944));
+        // 两死月已经停转，只剩暗环；只有活月（C）的光栅还在分光
+        if (!ring.dead) physRings.push(buildPhysArc(ring, i * 2.0944));
       });
       syncPhysCenters();
       return;
@@ -4977,7 +4999,8 @@ window.M3 = {
         return arc;
       });
 
-      const label = textSprite(node.name, palette()[node.key]);
+      const nodeNo = NODES.indexOf(node) + 1;
+      const label = textSprite(String(nodeNo), '#b9c6d8', 0.72);
       const dir = new M.Vector3(node.x, 0, node.z).normalize();
       label.position.set(node.x + dir.x * 0.30, PLANE_Y + 0.24, node.z + dir.z * 0.30);
       label.visible = state.showLabels;
@@ -5161,21 +5184,17 @@ window.M3 = {
   // 物理模式：闪耀点固定在每条色散弧的弧心（λ=500nm），
   // 交点只有落进弧内、并且靠近弧心时才算被点亮。
   function physMaskFor(node) {
-    let best = 0;
+    // 只有活月（C）的光栅还在工作：不在这条环上的交点永远不亮
+    if (!node.rings.split('∩').includes('C')) return 0;
+    const ring = RINGS.find((r) => r.key === 'C');
+    const center = state.gratingAngle * DEG + physSeedOf('C');
+    const local = Math.atan2(node.z - ring.z, node.x - ring.x);
+    const rel = Math.atan2(Math.sin(local - center), Math.cos(local - center));
+    if (Math.abs(rel) > ARC_HALF) return 0;
     const w = state.thunderWidth * DEG;
-    node.rings.split('∩').forEach((key) => {
-      const ring = RINGS.find((r) => r.key === key);
-      if (!ring) return;
-      const center = state.gratingAngle * DEG + physSeedOf(key);
-      const local = Math.atan2(node.z - ring.z, node.x - ring.x);
-      const rel = Math.atan2(Math.sin(local - center), Math.cos(local - center));
-      if (Math.abs(rel) > ARC_HALF) return;
-      const t = Math.min(Math.max((Math.abs(rel) - w * 0.6) / (w * 0.4 || 1), 0), 1);
-      best = Math.max(best, 1 - t * t * (3 - 2 * t));
-    });
-    return best;
+    const t = Math.min(Math.max((Math.abs(rel) - w * 0.6) / (w * 0.4 || 1), 0), 1);
+    return 1 - t * t * (3 - 2 * t);
   }
-
   function syncPhysCenters() {
     physRings.forEach(({ ring, mesh, mat, seed }) => {
       mesh.rotation.z = -(state.gratingAngle * DEG + seed);
@@ -5226,18 +5245,18 @@ window.M3 = {
 
     if (hudEl) hudEl.classList.toggle('on', activeMask > 0.05);
     if (embedStateEl) {
-      embedStateEl.textContent = activeMask > 0.05 ? `雷色 · ${active.name}` : '雷色 · 不现';
+      embedStateEl.textContent = activeMask > 0.05 ? `雷色 · 交点 ${NODES.indexOf(active) + 1}` : '雷色 · 不现';
       embedStateEl.classList.toggle('on', activeMask > 0.05);
     }
     if (hudStateEl) {
       const litNames = [];
-      nodeViews.forEach((v) => { if (v.lastMask > 0.05) litNames.push(v.node.name); });
+      nodeViews.forEach((v) => { if (v.lastMask > 0.05) litNames.push(`交点 ${NODES.indexOf(v.node) + 1}`); });
       hudStateEl.textContent = activeMask > 0.05
-        ? `雷色 · ${litNames.length ? litNames.join(' / ') : active.name}${state.bandMode === 'phys' ? ' · 物理' : ''}`
+        ? `雷色 · ${litNames.length ? litNames.join(' / ') : `交点 ${NODES.indexOf(active) + 1}`}`
         : '雷色 · 不现';
     }
     if (hudInfoEl) {
-      hudInfoEl.textContent = `光栅 ${state.gratingAngle.toFixed(0)}° · 窗口 ±${state.thunderWidth}° · 活月相位 ${(state.moonPhase == null ? moonPhase(state.gratingAngle) : state.moonPhase).toFixed(2)}`;
+      hudInfoEl.textContent = `光栅 ${state.gratingAngle.toFixed(0)}° · 窗口 ±${state.thunderWidth}° · 弧 ${(ARC_HALF * 2 * 180 / Math.PI).toFixed(1)}° · 活月相位 ${(state.moonPhase == null ? moonPhase(state.gratingAngle) : state.moonPhase).toFixed(2)}`;
     }
   }
 
@@ -5376,18 +5395,6 @@ window.M3 = {
   gratingInput.addEventListener('input', syncGrating);
   thunderInput.addEventListener('input', syncThunderWidth);
   Object.keys(brightInputs).forEach((key) => brightInputs[key].addEventListener('input', syncBrightness));
-  function setBandMode(mode) {
-    state.bandMode = mode;
-    bandPhysBtn.classList.toggle('active', mode === 'phys');
-    bandPhysBtn.setAttribute('aria-pressed', String(mode === 'phys'));
-    bandSymBtn.classList.toggle('active', mode === 'symbolic');
-    bandSymBtn.setAttribute('aria-pressed', String(mode === 'symbolic'));
-    buildRings();
-    syncGrating();
-  }
-  bandPhysBtn.addEventListener('click', () => setBandMode('phys'));
-  bandSymBtn.addEventListener('click', () => setBandMode('symbolic'));
-  setBandMode(state.bandMode);
 
   themeBase.addEventListener('click', () => applyTheme('base'));
   themeDark.addEventListener('click', () => applyTheme('dark'));
