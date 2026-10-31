@@ -463,30 +463,18 @@
   </div>
 </aside>
 
-<div class="legend spectrum-legend" aria-label="七元素对应波长">
-  <span class="spectrum-title">七元素 = 七个波长</span>
-  <span class="spectrum-row">
-    <i style="background:#EC4923"></i>火 677
-    <i style="background:#CC9046"></i>岩 634
-    <i style="background:#66AD16"></i>草 559
-    <i style="background:#359697"></i>风 490
-    <i style="background:#35AACC"></i>冰 483
-    <i style="background:#498FCC"></i>水 476
-    <i style="background:#6957C2"></i>雷 453
-  </span>
-  <span class="spectrum-row dim-row"><i class="sun"></i>天理 <i class="ecl"></i>遮挡体 <i class="th"></i>闪耀像点</span>
-</div>
+
 
 <div class="embed-bar" id="embedBar">
   <button class="btn" id="embedRun" type="button" aria-pressed="false">旋转</button>
   <button class="btn" id="embedFreeze" type="button">冻结重置</button>
   <button class="btn" id="embedStep" type="button">下一交点</button>
-  <span class="state" id="embedState">雷色 · 不现</span>
+  <span class="state" id="embedState">三域 · 六座 + 电盘</span>
 </div>
 
 <div class="hud" id="hud" aria-live="polite">
-  <b id="hudState">雷色 · 不现</b>
-  <span id="hudInfo">光栅 240° · 窗口 ±12°</span>
+  <b id="hudState">三域 · 六座 + 电盘</b>
+  <span id="hudInfo">日 / 月 / 星 · 四影</span>
 </div>
 
 <div id="loading">
@@ -4789,7 +4777,7 @@ window.M3 = {
     new M.MeshPhysicalMaterial({
       color: 0x0b1322, metalness: 0.55, roughness: 0.28, emissive: 0x140c2a, emissiveIntensity: 0.45,
       envMapIntensity: 0.55, clearcoat: 0.4, clearcoatRoughness: 0.3,
-      transparent: true, opacity: 0.9,
+      transparent: true, opacity: 0.80,
     })
   );
   plate.position.y = PLANE_Y - 0.06;
@@ -4856,14 +4844,14 @@ window.M3 = {
           float t = uTime * 0.22;
           // 脊状噪声 → 细电丝
           float n1 = fbm(p * 3.1 + vec2(t, -t * 0.7));
-          float fil = 1.0 - smoothstep(0.0, 0.10, abs(n1 - 0.5));
+          float fil = 1.0 - smoothstep(0.0, 0.075, abs(n1 - 0.5));
           // 更细的高频碎丝
           float n2 = fbm(p * 7.4 - vec2(t * 1.7, t * 0.8));
           float micro = pow(max(0.0, 1.0 - abs(n2 - 0.5) * 3.0), 5.0);
           // 偶发的亮弧：低频噪声过阈值才闪
           float n3 = fbm(p * 1.7 + vec2(-t * 0.5, t * 0.4));
           float surge = smoothstep(0.72, 0.86, n3) * (0.5 + 0.5 * sin(uTime * 5.0 + n3 * 30.0));
-          float glow = 0.16 + 1.05 * fil + 0.75 * micro + 0.55 * surge;
+          float glow = 0.09 + 0.70 * fil + 0.42 * micro + 0.28 * surge;
           float edge = smoothstep(1.0, 0.82, r);
           vec3 col = mix(vec3(0.42, 0.30, 1.00), vec3(0.94, 0.90, 1.0), clamp(fil + micro, 0.0, 1.0));
           gl_FragColor = vec4(col * glow * edge, 1.0);
@@ -4872,7 +4860,7 @@ window.M3 = {
     })
   );
   boltPlate.rotation.x = -Math.PI / 2;
-  boltPlate.position.y = PLANE_Y + 0.003;
+  boltPlate.position.y = PLANE_Y - 0.020;   // 沉在盘面之下，隔着玻璃盘透出来
   boltPlate.renderOrder = -3;
   scene.add(boltPlate);
   /* 带电荷的粒子：在盘面上方缓慢漂浮，忽明忽暗 */
