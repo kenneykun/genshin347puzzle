@@ -746,7 +746,7 @@ footer b{color:var(--gold);font-weight:400}
         <b>从哪开始？</b>
         <p>先点 01 天理 → 02 空 → 10 配，这是一条遮蔽线；再点 13 人，看她在四影与七元素之间的界间轨道。</p>
       </div>
-      <p class="caveat-mini"><b>颜色：</b>每个节点用它的提瓦特对应色。四影带虚线外环，双子带青色外环。<br><b>操作：</b>拖拽旋转，滚轮缩放；点击节点锁定详情，双击空白处复位。<br><b>读法：</b>4 影在上，7 元素在下，01 天理在中间做界面 / 光源；七元素是七个波长；六个交点是几何交点，不再预设元素色，三环中心留空。四影仍是 11→03、10→09、12→08、14→04 四条竖直对应线（03 雷是紫色波段，和其他六席一样固定）；02 空固定在 01–10 的遮蔽线上，13 人在四影 / 七元素之间的界间轨道。空之执政的新主人 = 双子（空）按剧情读法处理。这是结构模型，不是官方身份表。</p>
+      <p class="caveat-mini"><b>颜色：</b>每个节点用它的提瓦特对应色。四影带虚线外环，双子带青色外环。<br><b>操作：</b>拖拽旋转，滚轮缩放；点击节点锁定详情，双击空白处复位。<br><b>读法：</b>4 影在上，7 元素在下，01 天理在中间做界面 / 光源；七元素坐在六个交叉焦点上，03 雷在正中；三圆是日 / 月 / 星三域。四影仍是 11→03、10→09、12→08、14→04 四条竖直对应线（03 雷是紫色波段，和其他六席一样固定）；02 空固定在 01–10 的遮蔽线上，13 人在四影 / 七元素之间的界间轨道。空之执政的新主人 = 双子（空）按剧情读法处理。这是结构模型，不是官方身份表。</p>
     </aside>
   </section>
 
@@ -963,7 +963,7 @@ footer b{color:var(--gold);font-weight:400}
         <div class="callout">4 影（上）→ 1 理（界面）→ 7 光（下）<br>11 + 1 + 2 = 14<small>7 光 + 4 影 = 11 个方向；天理在光与影之间，双子是两个界间变量。</small></div>
         <p style="margin-top:12px">主图里上下两个锥体就是这条关系的可视化：上面是<b>影锥</b>（4 影），下面是<b>光锥</b>（7 元素），01 在锥腰，周围一圈七色是棱镜/界面。7 元素的光穿过这层界面，投影成上方的 4 影；<b>11 = 7 光 + 4 影</b> 个方向从这里展开。</p>
         <p>四影层不再收成四边形，而是被拉成 <b>四条竖直对应线</b>：<b>11 约束 / 死 → 03 雷</b> 走中线（雷不占固定座位，窗口扫到哪个交点，03 就临时落到哪里），<b>10 支配 / 空 → 09 岩</b>、<b>12 侵蚀 / 生 → 08 草</b>、<b>14 终焉 / 时 → 04 风</b> 各自垂直落到元素。四影仍是四席，几何上却变成一根中轴 + 三根立柱（10 / 12 / 14）。</p>
-        <p>七元素是 <b>七个波长</b>，均匀排布在 <code>R = 7</code> 的一圈上；它们不挂在三环交点上，也不再随闪耀移动。<code>03 雷</code> 是紫色波段（453nm），和其余六席一样是固定节点。三环上的六个交点只是几何交点，颜色由落在该处的波长决定。</p>
+        <p>七元素坐在 <b>六个交叉焦点</b> 上，围成六边形，<code>03 雷</code> 在正中；三条域圆是 <b>日 / 月 / 星</b>。四影挂到四块交叠区：<b>生</b>（日∩月·燃烧绽放）、<b>空</b>（日∩星·扩散）、<b>死</b>（中央·超载感电超导）、<b>时</b>（月∩星·结晶）。与左侧「三月 · 三域」同一套几何。</p>
         <p>在游戏文本里，世界式并不是一张公开的 3D 模型；它是一个<b>可计算的式</b>。所以这张立体图是「读法」，不是「官方截图」。</p>
       </div>
     </div>
@@ -1424,24 +1424,34 @@ footer b{color:var(--gold);font-weight:400}
     { a: 14, b: 4, t: 'corr' }
   ];
 
+  // 四影 = 四块交叠区：生（日∩月）· 空（日∩星）· 死（中央）· 时（月∩星）
   const SHADE_POS = {
-    11: { x: 0, z: 0 },
-    10: { x: 0, z: 3.90 },
-    12: { x: -3.03, z: -1.75 },
-    14: { x: 3.03, z: -1.75 }
+    12: { x: -2.2, z: 3.81 },   // 生 · 日∩月
+    10: { x: 2.2, z: 3.81 },    // 空 · 日∩星
+    11: { x: 0, z: 0 },         // 死 · 中央（雷之上）
+    14: { x: 0, z: -4.5 }       // 时 · 月∩星
   };
 
   // 七元素 = 七个波长。它们不再挂在三环交点上，而是均匀排布在 R = 7 的一圈上；
   // 03 雷 是紫色波段（453nm），和其他六个元素一样是固定节点，不再移动。
-  const TRI_POS = (() => {
-    const ids = [3, 4, 5, 6, 7, 8, 9];
-    const out = {};
-    ids.forEach((id, k) => {
-      const a = (90 - k * 360 / ids.length) * Math.PI / 180;
-      out[id] = { x: Math.cos(a) * 7.0, z: Math.sin(a) * 7.0 };
-    });
-    return out;
-  })();
+  // 七元素 = 六个交叉焦点（六边形）+ 中央；与左侧「三月 · 三域」一致
+  const TRI_POS = {
+    7: { x: 0, z: 3.5 },        // 火 · 90°
+    4: { x: 6.0622, z: 3.5 },   // 风 · 30°
+    5: { x: 3.03, z: -1.75 },   // 冰 · 330°
+    9: { x: 0, z: -7 },         // 岩 · 270°
+    6: { x: -3.03, z: -1.75 },  // 水 · 210°
+    8: { x: -6.0622, z: 3.5 },  // 草 · 150°
+    3: { x: 0, z: 0 }           // 雷 · 中央
+  };
+
+  // 三条域圆：日 / 月 / 星（圆心构成边长 = ρ 的等边三角形）
+  const DOMAIN_CIRCLES = [
+    { k: '日', cx: 0, cz: 3.5, color: 'rgba(236,73,35,.55)' },
+    { k: '月', cx: -3.03, cz: -1.75, color: 'rgba(73,143,204,.60)' },
+    { k: '星', cx: 3.03, cz: -1.75, color: 'rgba(53,170,204,.55)' }
+  ];
+  const DOMAIN_R = 6.0622;
 
   const TRI_LOOPS = [
     { color: '#f2d184' },
@@ -1992,39 +2002,41 @@ footer b{color:var(--gold);font-weight:400}
     ctx.restore();
   }
 
+  function domainCirclePath(cx, cz, r) {
+    ctx.beginPath();
+    const N = 160;
+    for (let i = 0; i <= N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const p = project({ x: cx + Math.cos(a) * r, y: LAYER[4].y, z: cz + Math.sin(a) * r });
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+  }
+
   function drawTrefoilBand() {
-    const elementHot = selected != null && NODE.get(selected).layer === 4;
     const layerHot = activeLayer == null || activeLayer === 4;
+    const layer4 = activeLayer === 4;
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    DOMAIN_CIRCLES.forEach((d) => {
+      domainCirclePath(d.cx, d.cz, DOMAIN_R);
+      ctx.globalAlpha = layerHot ? 0.85 : 0.30;
+      ctx.strokeStyle = 'rgba(3,5,11,.72)';
+      ctx.lineWidth = 20;
+      ctx.shadowColor = 'rgba(0,0,0,.55)';
+      ctx.shadowBlur = 12;
+      ctx.stroke();
 
-    trefoilPath();
-    ctx.globalAlpha = layerHot ? 0.9 : 0.34;
-    ctx.strokeStyle = 'rgba(3,5,11,.80)';
-    ctx.lineWidth = 22;
-    ctx.shadowColor = 'rgba(0,0,0,.6)';
-    ctx.shadowBlur = 12;
-    ctx.stroke();
-
-    trefoilPath();
-    ctx.globalAlpha = layerHot ? (elementHot ? 0.76 : 0.48) : 0.22;
-    ctx.strokeStyle = elementHot ? 'rgba(255,236,190,.62)' : 'rgba(154,180,210,.40)';
-    ctx.lineWidth = elementHot ? 16 : 13.5;
-    ctx.shadowColor = elementHot ? '#f2d184' : 'rgba(150,190,255,.26)';
-    ctx.shadowBlur = elementHot ? 24 : 16;
-    ctx.stroke();
-
-    trefoilPath();
-    ctx.globalAlpha = layerHot ? (elementHot ? 0.86 : 0.66) : 0.28;
-    const grad = ctx.createLinearGradient(CX - 360, 0, CX + 360, 0);
-    grad.addColorStop(0, '#6fe3ff');
-    grad.addColorStop(0.5, '#e8c97a');
-    grad.addColorStop(1, '#a78bfa');
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = elementHot ? 1.9 : 1.45;
-    ctx.shadowBlur = 0;
-    ctx.stroke();
+      domainCirclePath(d.cx, d.cz, DOMAIN_R);
+      ctx.globalAlpha = layerHot ? (layer4 ? 0.62 : 0.42) : 0.16;
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = layer4 ? 11 : 9;
+      ctx.shadowColor = d.color;
+      ctx.shadowBlur = 20;
+      ctx.stroke();
+    });
     ctx.restore();
   }
 
@@ -2295,9 +2307,10 @@ footer b{color:var(--gold);font-weight:400}
     }
 
     // triquetra flow: three sparks along the knot
-    TRI_LOOPS.forEach((loop, i) => {
+    DOMAIN_CIRCLES.forEach((d, i) => {
       const u = (t * 0.045 + i / 3) % 1;
-      drawGlowPoint(trefoilPoint(u), loop.color, 1.8);
+      const a = u * Math.PI * 2;
+      drawGlowPoint({ x: d.cx + Math.cos(a) * DOMAIN_R, y: LAYER[4].y, z: d.cz + Math.sin(a) * DOMAIN_R }, d.color, 1.8);
     });
 
     // Lumine's interstitial orbit
