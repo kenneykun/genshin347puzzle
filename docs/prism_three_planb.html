@@ -4925,6 +4925,20 @@ window.M3 = {
     return mat;
   }
 
+  // 环上取样：连续光谱做底，座位附近拉回元素色 —— 七色环 + 元素锚点
+  const _spec = new M.Color();
+  function ringSample(list, deg) {
+    const seat = colorAt(list, deg);
+    const hue = ((deg / 360) + 0.02) % 1;
+    _spec.setHSL(hue, 0.78, 0.55, M.SRGBColorSpace);
+    let dmin = 180;
+    for (let i = 0; i < list.length; i++) {
+      const d = Math.abs(((list[i].a / DEG) - deg + 540) % 360 - 180);
+      if (d < dmin) dmin = d;
+    }
+    const w = Math.exp(-Math.pow(dmin / 26, 2));
+    return _spec.clone().lerp(seat, 0.30 + 0.70 * w);
+  }
   function buildRingMesh(ring, width, opacity, y, blending) {
     const inner = RING_R - width / 2;
     const outer = RING_R + width / 2;
@@ -4937,7 +4951,7 @@ window.M3 = {
     const col = [];
     const idx = [];
     angles.forEach((a) => {
-      const c = colorAt(ring.list, a / DEG);
+      const c = ringSample(ring.list, a / DEG);
       for (const r of [inner, outer]) {
         pos.push(ring.x + Math.cos(a) * r, 0, ring.z + Math.sin(a) * r);
         col.push(c.r, c.g, c.b);
@@ -5049,26 +5063,31 @@ window.M3 = {
     DOMAINS.forEach((d) => {
       const cx = d.cx * S;
       const cz = -d.cz * S;
+      // 落在这一环上的座位 = 这一环的四个焦点，用它们的元素色做色锚
+      const onRing = SEATS.filter((s) => Math.abs(Math.hypot(s.x - d.cx, s.z - d.cz) - RHO) < 0.35);
+      const stops = onRing.map((s) => {
+        const dx = s.x - d.cx;
+        const dz = -(s.z - d.cz);
+        const deg = ((Math.atan2(dz, dx) * 180 / Math.PI) + 360) % 360;
+        return [deg, s.key];
+      });
+      const ring = { x: cx, z: cz, stops, list: stopList(stops) };
       const alive = d.key === state.aliveDomain;
-      const ring = new M.Mesh(
-        new M.RingGeometry(RING_R - (alive ? 0.105 : 0.075), RING_R + (alive ? 0.105 : 0.075), 320, 1),
-        new M.MeshBasicMaterial({
-          color: new M.Color(d.color), transparent: true, opacity: alive ? 0.85 : 0.22,
-          side: M.DoubleSide, blending: M.AdditiveBlending, depthWrite: false, toneMapped: false,
-        })
-      );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.set(cx, RING_Y, cz);
-      domainGroup.add(ring);
+      const k = alive ? 1.0 : 0.42;
+
+      const glow = buildRingMesh(ring, 0.66, 0.16, RING_Y - 0.014, M.AdditiveBlending);
+      glow.material.color.setScalar(k);
+      const core = buildRingMesh(ring, 0.30, 0.9, RING_Y, M.AdditiveBlending);
+      core.material.color.setScalar(k);
+      domainGroup.add(glow, core);
 
       const dir = new M.Vector3(cx, 0, cz).normalize();
-      const tag = textSprite(d.name, d.color, alive ? 1.7 : 1.2);
-      tag.position.set(cx + dir.x * (RING_R + 0.34), PLANE_Y + 0.30, cz + dir.z * (RING_R + 0.34));
+      const tag = textSprite(d.name, d.color, alive ? 1.5 : 1.05);
+      tag.position.set(cx + dir.x * (RING_R + 0.30), PLANE_Y + 0.26, cz + dir.z * (RING_R + 0.30));
       tag.visible = state.showLabels;
       domainGroup.add(tag);
     });
   }
-
   function buildSeats() {
     disposeGroup(seatGroup);
     SEATS.forEach((s) => {
