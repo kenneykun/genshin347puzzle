@@ -309,8 +309,12 @@
     <button class="btn" id="reset" type="button">Reset</button>
   </div>
   <div class="row utility">
-    <button class="btn" id="toggleRun" type="button" aria-pressed="false" title="光栅静止时入射角不变，闪耀波长不扫动，雷色不现">开始转动</button>
+    <button class="btn" id="toggleRun" type="button" aria-pressed="false" title="光栅静止时入射角不变，闪耀波长不扫动，雷色不现；转动时雷色依次扫过六个交点">旋转</button>
+    <button class="btn" id="freezeReset" type="button" title="冻结光栅并回到 240°：静算出的无雷态，活月相位回到最满">冻结重置</button>
+  </div>
+  <div class="row utility">
     <button class="btn active" id="toggleEclipse" type="button" aria-pressed="true">日食</button>
+    <button class="btn" id="stepThunder" type="button" title="跳到下一个会点亮交点的光栅角">下一交点</button>
   </div>
   <div class="checks">
     <label><input id="showLabels" type="checkbox" checked> 标签</label>
@@ -4421,6 +4425,8 @@ window.M3 = {
   const resetBtn = document.getElementById('reset');
   const runBtn = document.getElementById('toggleRun');
   const eclipseBtn = document.getElementById('toggleEclipse');
+  const freezeBtn = document.getElementById('freezeReset');
+  const stepBtn = document.getElementById('stepThunder');
   const labelsCheck = document.getElementById('showLabels');
   const groovesCheck = document.getElementById('showGrooves');
   const panelEl = document.querySelector('.panel');
@@ -4776,14 +4782,40 @@ window.M3 = {
   const nodeGroup = new M.Group();
   const labelGroup = new M.Group();
   const thunderGroup = new M.Group();
-  scene.add(nodeGroup, labelGroup, thunderGroup);
+  const blazeGroup = new M.Group();
+  scene.add(nodeGroup, labelGroup, thunderGroup, blazeGroup);
   const nodeViews = [];
+
+  // 交点各自在它的两条环上的局部方位角（环心为原点）
+  const ringByKey = (key) => RINGS.find((r) => r.key === key);
+  function nodeRingAngle(node, key) {
+    const ring = ringByKey(key);
+    return Math.atan2(node.z - ring.z, node.x - ring.x);
+  }
+
+  // 环上的一小段"闪耀弧"：雷色窗口扫过时点亮，同时是彩环的运动读数
+  function buildBlazeArc(node, key) {
+    const ring = ringByKey(key);
+    const phi = nodeRingAngle(node, key);
+    const half = 0.19;
+    const geo = new M.RingGeometry(RING_R - 0.105, RING_R + 0.105, 36, 1, -phi - half, half * 2);
+    const mat = new M.MeshBasicMaterial({
+      color: new M.Color(palette().thunderGlow),
+      transparent: true, opacity: 0,
+      blending: M.AdditiveBlending, depthWrite: false, side: M.DoubleSide, toneMapped: false,
+    });
+    const mesh = new M.Mesh(geo, mat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(ring.x, PLANE_Y + 0.03, ring.z);
+    return mesh;
+  }
 
   function buildNodes() {
     nodeViews.length = 0;
     disposeGroup(nodeGroup);
     disposeGroup(labelGroup);
     disposeGroup(thunderGroup);
+    disposeGroup(blazeGroup);
 
     NODES.forEach((node) => {
       const marker = new M.Mesh(
@@ -4797,6 +4829,12 @@ window.M3 = {
       marker.rotation.x = -Math.PI / 2;
       marker.position.set(node.x, MARKER_Y, node.z);
       nodeGroup.add(marker);
+
+      const arclets = node.rings.split('∩').map((key) => {
+        const arc = buildBlazeArc(node, key);
+        blazeGroup.add(arc);
+        return arc;
+      });
 
       const label = textSprite(node.name, palette()[node.key]);
       const dir = new M.Vector3(node.x, 0, node.z).normalize();
@@ -4837,7 +4875,7 @@ window.M3 = {
       thunderLabel.visible = false;
       thunderGroup.add(thunderLabel);
 
-      nodeViews.push({ node, marker, label, column, halo, spark, thunderLabel });
+      nodeViews.push({ node, marker, label, column, halo, spark, thunderLabel, arclets });
     });
   }
 
@@ -4867,28 +4905,17 @@ window.M3 = {
       );
       rig.add(body);
 
-      // 受光月牙：弧面镜的亮边，位于朝日食的一侧
+      // 受光月牙：整圈圆环 + 相位着色器，只显示 uArc 那一段
+      // 活月的 uArc 随光栅转角盈亏（月相），两个死月固定 → "两死，一生"
       const crescent = new M.Mesh(
-        new M.TorusGeometry(0.345, 0.022, 12, 72, Math.PI * 1.18),
-        new M.MeshBasicMaterial({
-          color: ring.dead ? 0x9dbde0 : 0xdfeeff,
-          transparent: true, opacity: ring.dead ? 0.72 : 0.95,
-          blending: M.AdditiveBlending, depthWrite: false, toneMapped: false,
-        })
-      );
-      crescent.position.z = 0.16;
-      crescent.rotation.z = Math.PI / 2 - (Math.PI * 1.18) / 2;   // 缺口朝下（背光侧）
-      rig.add(crescent);
-
-      // 光栅刻线：环向细刻线（垂直于弧向）→ 色散沿弧展开
-      const groove = new M.Mesh(
-        new M.TorusGeometry(0.344, 0.0075, 6, 120, Math.PI * 1.18),
+        new M.TorusGeometry(0.345, 0.020, 12, 160),
         new M.ShaderMaterial({
           uniforms: {
+            uArc: { value: ring.dead ? 0.59 : 0.74 },
+            uOpacity: { value: ring.dead ? 0.72 : 0.95 },
+            uColor: { value: new M.Color(ring.dead ? '#9dbde0' : '#dfeeff') },
+            uGrooves: { value: 72 },
             uPhase: { value: 0 },
-            uCount: { value: 72 },
-            uOpacity: { value: 0.55 },
-            uColor: { value: new M.Color('#eaf2ff') },
           },
           vertexShader: `
             varying vec2 vUv;
@@ -4898,28 +4925,31 @@ window.M3 = {
             }`,
           fragmentShader: `
             varying vec2 vUv;
-            uniform float uPhase;
-            uniform float uCount;
+            uniform float uArc;
             uniform float uOpacity;
             uniform vec3 uColor;
+            uniform float uGrooves;
+            uniform float uPhase;
             void main() {
-              float g = fract(vUv.x * uCount + uPhase);
+              float start = 0.25 - uArc * 0.5;              // 弧段中心固定在 local +Y
+              float u = fract(vUv.x - start);
+              float vis = smoothstep(uArc + 0.008, uArc - 0.012, u);
+              float g = fract(u * uGrooves + uPhase);       // 环向刻线（垂直于弧向）
               float line = smoothstep(0.62, 1.0, g);
-              gl_FragColor = vec4(uColor, line * uOpacity);
+              gl_FragColor = vec4(uColor, vis * (0.42 + 0.58 * line) * uOpacity);
             }`,
           transparent: true, blending: M.AdditiveBlending, depthWrite: false,
           side: M.DoubleSide, toneMapped: false,
         })
       );
-      groove.position.copy(crescent.position);
-      groove.rotation.copy(crescent.rotation);
-      rig.add(groove);
+      crescent.position.z = 0.16;
+      rig.add(crescent);
 
       const halo = glowSprite(ring.dead ? '#9fb6d8' : '#cfe0ff', 1.05, ring.dead ? 0.22 : 0.34);
       rig.add(halo);
 
       mirrorGroup.add(rig);
-      mirrorRigs.push({ ring, rig, body, crescent, groove, halo });
+      mirrorRigs.push({ ring, rig, body, crescent, halo });
     });
   }
 
@@ -4968,6 +4998,12 @@ window.M3 = {
 
 
   /* ---------------- 15. 雷色判定 ---------------- */
+  // 活月相位：1 = 最"满"（默认 240°，也就是算出来的无雷态），0 = 最细
+  function moonPhase(theta) {
+    const d = (((theta - 240) % 360) + 360) % 360;
+    return 0.5 + 0.5 * Math.cos((d / 360) * TAU);
+  }
+
   function thunderMaskFor(angle) {
     const d = (((state.gratingAngle - angle + 180) % 360) + 360) % 360 - 180;
     const w = state.thunderWidth;
@@ -4997,6 +5033,7 @@ window.M3 = {
       view.halo.material.opacity = mask * 1.0;
       view.halo.scale.setScalar(1.0 + mask * 1.15);
 
+      view.arclets.forEach((arc) => { arc.material.opacity = mask * 0.55; });
       view.spark.material.opacity = mask * 0.9;
       view.spark.scale.setScalar(1 + mask * 0.5);
       view.thunderLabel.visible = mask > 0.05;
@@ -5014,7 +5051,7 @@ window.M3 = {
         : '雷色 · 不现';
     }
     if (hudInfoEl) {
-      hudInfoEl.textContent = `光栅 ${state.gratingAngle.toFixed(0)}° · 窗口 ±${state.thunderWidth}° · 六交点 60° 分布`;
+      hudInfoEl.textContent = `光栅 ${state.gratingAngle.toFixed(0)}° · 窗口 ±${state.thunderWidth}° · 活月相位 ${(state.moonPhase == null ? moonPhase(state.gratingAngle) : state.moonPhase).toFixed(2)}`;
     }
   }
 
@@ -5046,8 +5083,11 @@ window.M3 = {
     state.gratingAngle = Number(gratingInput.value);
     gratOut.textContent = `${state.gratingAngle.toFixed(0)}°`;
     grooveMats.forEach((mat) => { mat.uniforms.uPhase.value = state.gratingAngle * DEG; });
-    mirrorRigs.forEach(({ groove }) => {
-      groove.material.uniforms.uPhase.value = state.gratingAngle * DEG * 0.35;
+    const phase = moonPhase(state.gratingAngle);
+    state.moonPhase = phase;
+    mirrorRigs.forEach((rig) => {
+      rig.crescent.material.uniforms.uPhase.value = state.gratingAngle * DEG * 0.35;
+      if (!rig.ring.dead) rig.crescent.material.uniforms.uArc.value = 0.34 + 0.40 * phase;
     });
     updateThunder();
   }
@@ -5069,8 +5109,11 @@ window.M3 = {
 
   function syncGratingUniforms() {
     grooveMats.forEach((mat) => { mat.uniforms.uPhase.value = state.gratingAngle * DEG; });
-    mirrorRigs.forEach(({ groove }) => {
-      groove.material.uniforms.uPhase.value = state.gratingAngle * DEG * 0.35;
+    const phase = moonPhase(state.gratingAngle);
+    state.moonPhase = phase;
+    mirrorRigs.forEach((rig) => {
+      rig.crescent.material.uniforms.uPhase.value = state.gratingAngle * DEG * 0.35;
+      if (!rig.ring.dead) rig.crescent.material.uniforms.uArc.value = 0.34 + 0.40 * phase;
     });
   }
 
@@ -5089,7 +5132,7 @@ window.M3 = {
 
   function setRunning(run) {
     state.running = run;
-    runBtn.textContent = run ? '暂停转动' : '开始转动';
+    runBtn.textContent = run ? '冻结' : '旋转';
     runBtn.classList.toggle('active', run);
     runBtn.setAttribute('aria-pressed', String(run));
   }
@@ -5150,6 +5193,24 @@ window.M3 = {
   });
   resetBtn.addEventListener('click', resetAll);
   runBtn.addEventListener('click', () => setRunning(!state.running));
+
+  // 冻结重置：回到算出来的无雷态（光栅 240°，活月最满）
+  function freezeToCalmState() {
+    setRunning(false);
+    gratingInput.value = '240';
+    syncGrating();
+  }
+  freezeBtn.addEventListener('click', freezeToCalmState);
+
+  // 下一交点：跳到下一个交点正对窗口的光栅角（演示用）
+  let stepCursor = -1;
+  stepBtn.addEventListener('click', () => {
+    setRunning(false);
+    stepCursor = (stepCursor + 1) % NODES.length;
+    const target = ((NODES[stepCursor].angle % 360) + 360) % 360;
+    gratingInput.value = String(target);
+    syncGrating();
+  });
   eclipseBtn.addEventListener('click', () => setEclipseVisible(!state.showEclipse));
   labelsCheck.addEventListener('change', () => {
     state.showLabels = labelsCheck.checked;
