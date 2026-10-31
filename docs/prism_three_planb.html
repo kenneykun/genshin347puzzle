@@ -5107,41 +5107,6 @@ window.M3 = {
     });
   }
 
-  /* ---------------- 13. 天理 → 三月 的光束 ---------------- */
-  const beamGroup = new M.Group();
-  scene.add(beamGroup);
-  const beamMaterial = new M.MeshBasicMaterial({
-    color: 0xffe8c0, transparent: true, opacity: 0.13,
-    blending: M.AdditiveBlending, depthWrite: false, side: M.DoubleSide, toneMapped: false,
-  });
-
-  function beamBetween(a, b, radius) {
-    const dir = new M.Vector3().subVectors(b, a);
-    const len = dir.length();
-    const mesh = new M.Mesh(new M.CylinderGeometry(radius, radius, len, 10, 1, true), beamMaterial);
-    mesh.position.copy(a).addScaledVector(dir, 0.5);
-    mesh.quaternion.setFromUnitVectors(new M.Vector3(0, 1, 0), dir.normalize());
-    return mesh;
-  }
-
-  const reflectMaterial = new M.MeshBasicMaterial({
-    color: 0xbfd8ff, transparent: true, opacity: 0.10,
-    blending: M.AdditiveBlending, depthWrite: false, side: M.DoubleSide, toneMapped: false,
-  });
-
-  function buildBeams() {
-    disposeGroup(beamGroup);
-    mirrorRigs.forEach(({ rig, ring }) => {
-      // 上行：天理 → 三月（月在光源之上，只接收上行光）
-      beamGroup.add(beamBetween(sunGroup.position, rig.position, 0.006));
-      // 下行：三月 → 各自的环（反射光落回底色盘）
-      const target = new M.Vector3(ring.x, PLANE_Y + 0.02, ring.z);
-      const beam = beamBetween(rig.position, target, 0.01);
-      beam.material = reflectMaterial;
-      beamGroup.add(beam);
-    });
-  }
-
   /* ---------------- 14. 日食几何（阴影锥半径） ---------------- */
   function umbraRadius() {
     const r = Number(eclipseInput.value);
@@ -5251,7 +5216,6 @@ window.M3 = {
   buildRings();
   buildNodes();
   buildMirrors();
-  buildBeams();
   updateEclipse();
   updateThunder();
 
@@ -5264,8 +5228,7 @@ window.M3 = {
     sunLight.position.copy(sunGroup.position);
     sunOut.textContent = h.toFixed(1);
     updateEclipse();
-    buildBeams();
-  }
+    }
 
   function syncEclipse() {
     eclOut.textContent = Number(eclipseInput.value).toFixed(2);
@@ -5446,7 +5409,7 @@ window.M3 = {
   const SPEED = 10; // 度 / 秒
 
   if (new URLSearchParams(location.search).has('debug')) {
-    window.__dbg = { M, scene, state, RINGS, ringGroup, grooveGroup, nodeGroup, mirrorGroup, sunGroup, eclipseGroup, beamGroup, plate, colorAt, stopList, camera, controls };
+    window.__dbg = { M, scene, state, RINGS, ringGroup, grooveGroup, nodeGroup, mirrorGroup, sunGroup, eclipseGroup, plate, colorAt, stopList, camera, controls };
   }
 
   function tick() {
