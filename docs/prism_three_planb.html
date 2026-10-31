@@ -241,10 +241,23 @@
   .hud.on b{color:#cfc2ff;text-shadow:0 0 20px rgba(123,102,226,.8)}
   html.embed .hud{display:none!important}
   .row .btn{white-space:nowrap}
+  .panel-head + .row{margin-bottom:9px}
+  .panel-head + .row + .row.utility{margin-bottom:11px}
   @media (max-width:760px){
     .hud{display:none}
   }
-</style>
+
+  /* 嵌入模式（站点首页 iframe）的常驻控制条 */
+  .embed-bar{display:none}
+  html.embed .embed-bar{
+    display:flex;align-items:center;gap:7px;position:fixed;left:14px;bottom:14px;z-index:6;
+    padding:7px 9px;border-radius:12px;border:1px solid rgba(123,102,226,.30);
+    background:rgba(8,11,20,.74);backdrop-filter:blur(12px);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  html.embed .embed-bar .btn{padding:5px 9px;font-size:8px;letter-spacing:.08em;border-radius:7px}
+  html.embed .embed-bar .state{font-size:8px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+  html.embed .embed-bar .state.on{color:#cfc2ff}</style>
 <script>if (new URLSearchParams(location.search).has('visual')) document.documentElement.classList.add('embed');</script>
 </head>
 <body>
@@ -265,6 +278,15 @@
   <div class="panel-head">
     <span>GRATING CONTROLS</span><span class="live"><i></i>OPTIC</span>
     <button class="panel-close" id="panelClose" type="button" aria-label="收起参数">×</button>
+  </div>
+
+  <div class="row">
+    <button class="btn" id="toggleRun" type="button" aria-pressed="false" title="光栅静止时入射角不变，闪耀波长不扫动，雷色不现；转动时雷色依次扫过六个交点">旋转</button>
+    <button class="btn" id="freezeReset" type="button" title="冻结光栅并回到 240°：算出来的无雷态，活月相位回到最满">冻结重置</button>
+  </div>
+  <div class="row utility">
+    <button class="btn active" id="toggleEclipse" type="button" aria-pressed="true">日食</button>
+    <button class="btn" id="stepThunder" type="button" title="跳到下一个会点亮交点的光栅角">下一交点</button>
   </div>
 
   <label class="slider">
@@ -308,14 +330,6 @@
     <button class="btn" id="auto" type="button" aria-pressed="false">Auto orbit</button>
     <button class="btn" id="reset" type="button">Reset</button>
   </div>
-  <div class="row utility">
-    <button class="btn" id="toggleRun" type="button" aria-pressed="false" title="光栅静止时入射角不变，闪耀波长不扫动，雷色不现；转动时雷色依次扫过六个交点">旋转</button>
-    <button class="btn" id="freezeReset" type="button" title="冻结光栅并回到 240°：静算出的无雷态，活月相位回到最满">冻结重置</button>
-  </div>
-  <div class="row utility">
-    <button class="btn active" id="toggleEclipse" type="button" aria-pressed="true">日食</button>
-    <button class="btn" id="stepThunder" type="button" title="跳到下一个会点亮交点的光栅角">下一交点</button>
-  </div>
   <div class="checks">
     <label><input id="showLabels" type="checkbox" checked> 标签</label>
     <label><input id="showGrooves" type="checkbox" checked> 刻线</label>
@@ -328,6 +342,13 @@
   <span><i class="ecl"></i>日食阴影</span>
   <span><i></i>光栅刻线（径向）</span>
   <span><i class="th"></i>雷色闪耀</span>
+</div>
+
+<div class="embed-bar" id="embedBar">
+  <button class="btn" id="embedRun" type="button" aria-pressed="false">旋转</button>
+  <button class="btn" id="embedFreeze" type="button">冻结重置</button>
+  <button class="btn" id="embedStep" type="button">下一交点</button>
+  <span class="state" id="embedState">雷色 · 不现</span>
 </div>
 
 <div class="hud" id="hud" aria-live="polite">
@@ -4217,6 +4238,7 @@ window.M3 = {
   const QUERY = new URLSearchParams(location.search);
   const EMBED = QUERY.has('visual');
   const STILL = QUERY.has('still');      // 预览截图用：嵌入模式也不自动转动
+  const BLAZE_PARAM = Number(QUERY.get('blaze'));   // ?blaze=270 直接把光栅钉在某个角度
 
   const TAU = Math.PI * 2;
   const DEG = Math.PI / 180;
@@ -4427,6 +4449,10 @@ window.M3 = {
   const eclipseBtn = document.getElementById('toggleEclipse');
   const freezeBtn = document.getElementById('freezeReset');
   const stepBtn = document.getElementById('stepThunder');
+  const embedRunBtn = document.getElementById('embedRun');
+  const embedFreezeBtn = document.getElementById('embedFreeze');
+  const embedStepBtn = document.getElementById('embedStep');
+  const embedStateEl = document.getElementById('embedState');
   const labelsCheck = document.getElementById('showLabels');
   const groovesCheck = document.getElementById('showGrooves');
   const panelEl = document.querySelector('.panel');
@@ -4477,6 +4503,11 @@ window.M3 = {
     controls.minPolarAngle = 0.06;
     controls.maxPolarAngle = Math.PI * 0.96;
     controls.autoRotateSpeed = 0.55;
+    if (EMBED) {
+      // 站点首页的小画框：稍微拉近，避免底片显得太小
+      camera.position.set(6.3, 4.5, 8.7);
+      controls.target.set(0, 0.5, 0);
+    }
     controls.update();
   } catch (err) {
     showFallback(err);
@@ -4797,7 +4828,7 @@ window.M3 = {
   function buildBlazeArc(node, key) {
     const ring = ringByKey(key);
     const phi = nodeRingAngle(node, key);
-    const half = 0.19;
+    const half = 0.30;
     const geo = new M.RingGeometry(RING_R - 0.105, RING_R + 0.105, 36, 1, -phi - half, half * 2);
     const mat = new M.MeshBasicMaterial({
       color: new M.Color(palette().thunderGlow),
@@ -4843,14 +4874,14 @@ window.M3 = {
       labelGroup.add(label);
 
       const column = new M.Mesh(
-        new M.CylinderGeometry(0.018, 0.13, 1.15, 18, 1, true),
+        new M.CylinderGeometry(0.035, 0.19, 1.5, 22, 1, true),
         new M.MeshBasicMaterial({
           color: new M.Color(palette().thunderGlow),
           transparent: true, opacity: 0, blending: M.AdditiveBlending,
           depthWrite: false, side: M.DoubleSide, toneMapped: false,
         })
       );
-      column.position.set(node.x, PLANE_Y + 0.58, node.z);
+      column.position.set(node.x, PLANE_Y + 0.78, node.z);
       thunderGroup.add(column);
 
       const halo = glowSprite(palette().thunderGlow, 1.0, 0);
@@ -4859,7 +4890,7 @@ window.M3 = {
 
       // 闪耀火花弧：围绕交点的一小段弧
       const spark = new M.Mesh(
-        new M.TorusGeometry(0.17, 0.010, 8, 40, Math.PI * 1.5),
+        new M.TorusGeometry(0.26, 0.016, 8, 44, Math.PI * 1.5),
         new M.MeshBasicMaterial({
           color: new M.Color(palette().thunderGlow),
           transparent: true, opacity: 0, blending: M.AdditiveBlending,
@@ -5026,16 +5057,16 @@ window.M3 = {
       view.marker.material.opacity = 0.85 + mask * 0.15;
       view.marker.scale.setScalar(1 + mask * 1.1);
 
-      view.column.material.color.copy(glowColor);
-      view.column.material.opacity = mask * 0.8;
-      view.column.scale.set(1 + mask * 0.4, 0.4 + mask * 0.75, 1 + mask * 0.4);
+      view.column.material.color.copy(thunderColor);
+      view.column.material.opacity = mask * 0.5;
+      view.column.scale.set(1 + mask * 0.5, 0.45 + mask * 0.9, 1 + mask * 0.5);
 
-      view.halo.material.opacity = mask * 1.0;
-      view.halo.scale.setScalar(1.0 + mask * 1.15);
+      view.halo.material.opacity = mask * 0.72;
+      view.halo.scale.setScalar(1.1 + mask * 1.6);
 
-      view.arclets.forEach((arc) => { arc.material.opacity = mask * 0.55; });
-      view.spark.material.opacity = mask * 0.9;
-      view.spark.scale.setScalar(1 + mask * 0.5);
+      view.arclets.forEach((arc) => { arc.material.opacity = mask * 0.85; });
+      view.spark.material.opacity = mask * 0.7;
+      view.spark.scale.setScalar(1 + mask * 0.9);
       view.thunderLabel.visible = mask > 0.05;
 
       if (mask > activeMask) {
@@ -5045,6 +5076,10 @@ window.M3 = {
     });
 
     if (hudEl) hudEl.classList.toggle('on', activeMask > 0.05);
+    if (embedStateEl) {
+      embedStateEl.textContent = activeMask > 0.05 ? `雷色 · ${active.name}` : '雷色 · 不现';
+      embedStateEl.classList.toggle('on', activeMask > 0.05);
+    }
     if (hudStateEl) {
       hudStateEl.textContent = activeMask > 0.05
         ? `雷色 · ${active.name}（${active.rings}）`
@@ -5132,9 +5167,12 @@ window.M3 = {
 
   function setRunning(run) {
     state.running = run;
-    runBtn.textContent = run ? '冻结' : '旋转';
-    runBtn.classList.toggle('active', run);
-    runBtn.setAttribute('aria-pressed', String(run));
+    [runBtn, embedRunBtn].forEach((btn) => {
+      if (!btn) return;
+      btn.textContent = run ? '冻结' : '旋转';
+      btn.classList.toggle('active', run);
+      btn.setAttribute('aria-pressed', String(run));
+    });
   }
 
   function setEclipseVisible(show) {
@@ -5201,16 +5239,19 @@ window.M3 = {
     syncGrating();
   }
   freezeBtn.addEventListener('click', freezeToCalmState);
+  if (embedFreezeBtn) embedFreezeBtn.addEventListener('click', freezeToCalmState);
 
   // 下一交点：跳到下一个交点正对窗口的光栅角（演示用）
   let stepCursor = -1;
-  stepBtn.addEventListener('click', () => {
+  function goNextBlaze() {
     setRunning(false);
     stepCursor = (stepCursor + 1) % NODES.length;
     const target = ((NODES[stepCursor].angle % 360) + 360) % 360;
     gratingInput.value = String(target);
     syncGrating();
-  });
+  }
+  stepBtn.addEventListener('click', goNextBlaze);
+  if (embedStepBtn) embedStepBtn.addEventListener('click', goNextBlaze);
   eclipseBtn.addEventListener('click', () => setEclipseVisible(!state.showEclipse));
   labelsCheck.addEventListener('change', () => {
     state.showLabels = labelsCheck.checked;
@@ -5228,6 +5269,9 @@ window.M3 = {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
+  if (QUERY.has('blaze') && Number.isFinite(BLAZE_PARAM)) {
+    gratingInput.value = String(((BLAZE_PARAM % 360) + 360) % 360);
+  }
   setRunning(state.running);
   syncSun();
   syncEclipse();
