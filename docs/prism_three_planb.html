@@ -289,7 +289,7 @@
   <div class="title">
     <div class="kicker">Grating lab / 01 天理 · 01 日食 · 03 光栅</div>
     <h1>三月 · 光栅</h1>
-    <p>三月悬在最上方，接收中间那盏天理的上行光，再反射回底色盘完成分色与照明；天理直射盘面的下行光被遮挡体挡住，盘面只吃到经三月中介过的光。雷色不是独立谱带，而是光栅转动时扫过交点的闪耀高亮。</p>
+    <p>三月悬在最上方，接收中间那盏天理的上行光，再反射回底色盘完成分色与照明；天理直射盘面的下行光被遮挡体挡住，盘面只吃到经三月中介过的光。闪耀不是独立元素，而是光栅效率最高的那个波长；它的像点扫过交点时才把交点点亮。</p>
   </div>
 </header>
 
@@ -5024,12 +5024,8 @@ window.M3 = {
       spark.position.set(node.x, MARKER_Y + 0.004, node.z);
       thunderGroup.add(spark);
 
-      const thunderLabel = textSprite('雷', '#d8ccff', 1.9);
-      thunderLabel.position.set(node.x, PLANE_Y + 1.16, node.z);
-      thunderLabel.visible = false;
-      thunderGroup.add(thunderLabel);
 
-      nodeViews.push({ node, marker, label, halo, spark, thunderLabel, arclets });
+      nodeViews.push({ node, marker, label, halo, spark, arclets });
     });
   }
 
@@ -5187,7 +5183,6 @@ window.M3 = {
       view.arclets.forEach((arc) => { arc.material.opacity = mask * 0.85; });
       view.spark.material.opacity = mask * 0.95;
       view.spark.scale.setScalar(1 + mask * 0.9);
-      view.thunderLabel.visible = mask > 0.05;
 
       if (mask > activeMask) {
         activeMask = mask;
@@ -5197,15 +5192,15 @@ window.M3 = {
 
     if (hudEl) hudEl.classList.toggle('on', activeMask > 0.05);
     if (embedStateEl) {
-      embedStateEl.textContent = activeMask > 0.05 ? `雷色 · 交点 ${NODES.indexOf(active) + 1}` : '雷色 · 不现';
+      embedStateEl.textContent = activeMask > 0.05 ? `雷色 · 交点 ${NODES.indexOf(active) + 1}` : '闪耀 · 未到交点';
       embedStateEl.classList.toggle('on', activeMask > 0.05);
     }
     if (hudStateEl) {
       const litNames = [];
       nodeViews.forEach((v) => { if (v.lastMask > 0.05) litNames.push(`交点 ${NODES.indexOf(v.node) + 1}`); });
       hudStateEl.textContent = activeMask > 0.05
-        ? `雷色 · ${litNames.length ? litNames.join(' / ') : `交点 ${NODES.indexOf(active) + 1}`}`
-        : '雷色 · 不现';
+        ? `闪耀 · ${litNames.length ? litNames.join(' / ') : `交点 ${NODES.indexOf(active) + 1}`}`
+        : '闪耀 · 未到交点';
     }
     if (hudInfoEl) {
       hudInfoEl.textContent = `光栅 ${state.gratingAngle.toFixed(0)}° · 窗口 ±${state.thunderWidth}° · 弧 ${(ARC_HALF * 2 * 180 / Math.PI).toFixed(1)}° · 活月相位 ${(state.moonPhase == null ? moonPhase(state.gratingAngle) : state.moonPhase).toFixed(2)}`;
