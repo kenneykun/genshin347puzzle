@@ -277,7 +277,101 @@
   .spectrum-legend .dim-row i.ecl{background:#05060a;border:1px solid rgba(255,214,150,.8);border-radius:50%}
   .spectrum-legend .dim-row i.th{background:#7B66E2;border-radius:50%}
   html.embed .legend.spectrum-legend{display:flex!important;right:14px;bottom:14px;opacity:.92}
-  html.embed .legend.spectrum-legend .spectrum-title{display:none}</style>
+  html.embed .legend.spectrum-legend .spectrum-title{display:none}
+  /* 结构层版本：光栅转角 / 闪耀窗口 / 光栅按钮已退役，保留 DOM 但隐藏 */
+  #toggleRun, #freezeReset, #stepThunder, #embedRun, #embedFreeze, #embedStep,
+  label.slider:has(#gratingAngle), label.slider:has(#thunderWidth) { display: none !important; }
+  /* 结构层版本：三环亮度与波长标尺已退役 */
+  label.slider:has(#brightA), label.slider:has(#brightB), label.slider:has(#brightC),
+  .spectrum-legend { display: none !important; }
+  /* ================= 现代侧栏 ================= */
+  .bar{
+    position:fixed;left:22px;top:22px;bottom:22px;z-index:5;width:296px;
+    display:flex;flex-direction:column;
+    border:1px solid rgba(150,180,220,.14);border-radius:18px;
+    background:linear-gradient(180deg, rgba(13,19,31,.92), rgba(8,11,19,.94));
+    box-shadow:0 24px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.045);
+    backdrop-filter:blur(18px) saturate(1.1);
+    transition:transform .34s cubic-bezier(.3,.8,.3,1), opacity .28s;
+  }
+  body.side-collapsed .bar{transform:translateX(calc(-100% - 26px));opacity:0;pointer-events:none}
+  .bar-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    padding:16px 16px 13px;border-bottom:1px solid rgba(150,180,220,.10);
+  }
+  .bar-kicker{font-size:8.5px;letter-spacing:.22em;color:rgba(140,170,205,.75);text-transform:uppercase}
+  .bar-title{font-family:var(--serif);font-size:19px;letter-spacing:.08em;color:#e9eef7;margin-top:5px}
+  .bar-collapse{
+    appearance:none;border:1px solid rgba(150,180,220,.18);border-radius:9px;
+    width:26px;height:26px;line-height:1;color:rgba(190,210,235,.8);background:rgba(255,255,255,.03);
+    font-size:14px;cursor:pointer;transition:.2s;
+  }
+  .bar-collapse:hover{color:#fff;border-color:rgba(150,200,255,.45)}
+  .bar-body{padding:14px 16px 18px;overflow-y:auto;scrollbar-width:thin;flex:1}
+  .grp{padding:12px 0 13px;border-bottom:1px solid rgba(150,180,220,.08)}
+  .grp:first-child{padding-top:2px}
+  .grp:last-of-type{border-bottom:0}
+  .grp-label{
+    display:flex;align-items:center;gap:8px;margin-bottom:9px;
+    font-size:9.5px;letter-spacing:.16em;color:rgba(150,178,210,.85);text-transform:uppercase;
+  }
+  .grp-label em{font-style:normal;color:rgba(120,145,175,.7);letter-spacing:.06em;text-transform:none;font-size:9px}
+  .bar .slider{margin:0 0 11px}
+  .bar .slider > span{font-size:11px;letter-spacing:.03em;color:rgba(185,200,220,.9);margin-bottom:7px}
+  .bar .slider output{color:#e8eef8;font-size:11px}
+  .bar input[type=range]{height:4px;background:linear-gradient(90deg,rgba(236,73,35,.5),rgba(73,143,204,.55),rgba(53,170,204,.5))}
+  .bar input[type=range]::-webkit-slider-thumb{
+    width:14px;height:14px;background:#eef4ff;border:1px solid rgba(150,200,255,.9);
+    box-shadow:0 0 14px rgba(120,180,255,.65);
+  }
+  .seg{display:flex;gap:6px}
+  .seg button{
+    flex:1;appearance:none;cursor:pointer;padding:8px 6px;border-radius:10px;
+    border:1px solid rgba(150,180,220,.16);background:rgba(255,255,255,.025);
+    color:rgba(170,190,215,.9);font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    transition:.18s;
+  }
+  .seg button:hover{color:#fff;border-color:rgba(150,200,255,.35)}
+  .seg button.on,.seg button.active{
+    color:#08111d;background:linear-gradient(180deg,#bfe0ff,#8fc8f5);
+    border-color:rgba(180,220,255,.9);box-shadow:0 0 18px rgba(120,180,255,.35);font-weight:600;
+  }
+  .toggles{display:flex;gap:14px}
+  .switch{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(180,196,216,.9);cursor:pointer}
+  .switch input{
+    appearance:none;width:30px;height:17px;border-radius:99px;cursor:pointer;
+    background:rgba(150,180,220,.18);border:1px solid rgba(150,180,220,.2);position:relative;transition:.2s;
+  }
+  .switch input::after{
+    content:"";position:absolute;top:1.5px;left:2px;width:12px;height:12px;border-radius:50%;
+    background:rgba(220,235,255,.8);transition:.2s;
+  }
+  .switch input:checked{background:rgba(120,180,255,.45);border-color:rgba(150,200,255,.6)}
+  .switch input:checked::after{left:14px;background:#fff}
+  .grp-actions{display:flex;gap:8px}
+  .grp-actions .btn{flex:1;padding:9px 10px;font-size:10.5px;border-radius:10px}
+  .note{margin:10px 0 0;font-size:10px;line-height:1.75;color:rgba(140,160,185,.75)}
+  .note b{color:#cfdcef;font-weight:600}
+  .adv{margin-top:12px;border-top:1px solid rgba(150,180,220,.08);padding-top:10px}
+  .adv summary{font-size:9.5px;letter-spacing:.14em;color:rgba(120,145,175,.7);cursor:pointer;list-style:none}
+  .adv summary::-webkit-details-marker{display:none}
+  .adv[open] summary{color:rgba(160,190,220,.9);margin-bottom:10px}
+  .adv .row{display:flex;gap:8px;margin-bottom:8px}
+  .bar-open{
+    position:fixed;left:22px;top:22px;z-index:5;display:none;align-items:center;gap:6px;
+    appearance:none;cursor:pointer;padding:9px 14px;border-radius:12px;
+    border:1px solid rgba(150,180,220,.2);background:rgba(10,15,25,.85);
+    color:rgba(200,220,245,.9);font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(0,0,0,.45);transition:.2s;
+  }
+  .bar-open:hover{color:#fff;border-color:rgba(150,200,255,.45)}
+  body.side-collapsed .bar-open{display:inline-flex}
+  html.embed .bar,html.embed .bar-open{display:none!important}
+  @media (max-width:760px){
+    .bar{left:0;right:0;top:auto;bottom:0;width:auto;border-radius:18px 18px 0 0;max-height:70vh}
+    body.side-collapsed .bar{transform:translateY(105%)}
+    .bar-open{left:50%;transform:translateX(-50%);top:auto;bottom:14px}
+  }</style>
 <script>if (new URLSearchParams(location.search).has('visual')) document.documentElement.classList.add('embed');</script>
 </head>
 <body>
@@ -287,75 +381,86 @@
 <header class="top">
   <a class="back" href="world_formula.html">← 世界式</a>
   <div class="title">
-    <div class="kicker">Grating lab / 01 天理 · 01 日食 · 03 光栅</div>
-    <h1>三月 · 光栅</h1>
-    <p>三月悬在最上方，接收中间那盏天理的上行光，再反射回底色盘完成分色与照明；天理直射盘面的下行光被遮挡体挡住，盘面只吃到经三月中介过的光。闪耀不是独立元素，而是光栅效率最高的那个波长；它的像点扫过交点时才把交点点亮。</p>
+    <div class="kicker">Sun / Moon / Star · 7 seats · 4 zones</div>
+    <h1>三月 · 三域</h1>
+    <p>三个圆是日 / 月 / 星三域。七个元素各占一个座位：火在日域顶点，草水在月域，风冰在星域，岩在月与星之间，雷在三重交叠的中心——永恒最接近天理。三圆两两交叠加中央交叠，正好四块区域，对应四族反应。</p>
   </div>
 </header>
 
 <button class="panel-toggle" id="panelToggle" type="button">参数 / CONTROLS</button>
-<aside class="panel" aria-label="光栅参数">
-  <div class="panel-head">
-    <span>GRATING CONTROLS</span><span class="live"><i></i>OPTIC</span>
-    <button class="panel-close" id="panelClose" type="button" aria-label="收起参数">×</button>
+<button class="bar-open" id="panelOpen" type="button" aria-label="展开参数栏">参数</button>
+<aside class="bar" id="panelBar" aria-label="结构参数">
+  <div class="bar-head">
+    <div class="bar-id">
+      <div class="bar-kicker">SUN · MOON · STAR</div>
+      <div class="bar-title">三月 · 三域</div>
+    </div>
+    <button class="bar-collapse" id="panelCollapse" type="button" aria-label="收起参数栏">‹</button>
   </div>
 
-  <div class="row">
-    <button class="btn" id="toggleRun" type="button" aria-pressed="false" title="光栅静止时入射角不变，闪耀波长不扫动，雷色不现；转动时雷色依次扫过六个交点">旋转</button>
-    <button class="btn" id="freezeReset" type="button" title="冻结光栅并回到 240°：算出来的无雷态，活月相位回到最满">冻结重置</button>
-  </div>
-  <div class="row utility">
-    <button class="btn active" id="toggleEclipse" type="button" aria-pressed="true">日食</button>
-    <button class="btn" id="stepThunder" type="button" title="跳到下一个会点亮交点的光栅角">下一交点</button>
-  </div>
+  <div class="bar-body">
+    <section class="grp">
+      <div class="grp-label">光源</div>
+      <label class="slider">
+        <span>天理高度 <output id="sunOut">4.4</output></span>
+        <input id="sunHeight" type="range" min="2" max="9" step="0.1" value="4.4">
+      </label>
+      <label class="slider">
+        <span>遮挡半径 <output id="eclOut">0.22</output></span>
+        <input id="eclipseRadius" type="range" min="0.08" max="0.7" step="0.01" value="0.22">
+      </label>
+    </section>
 
-  <label class="slider">
-    <span>SUN HEIGHT / 天理高度（盘面之上） <output id="sunOut">4.4</output></span>
-    <input id="sunHeight" type="range" min="2" max="9" step="0.1" value="4.4">
-  </label>
-  <label class="slider">
-    <span>ECLIPSE / 日食遮挡半径 <output id="eclOut">0.22</output></span>
-    <input id="eclipseRadius" type="range" min="0.08" max="0.7" step="0.01" value="0.22">
-  </label>
-  <label class="slider">
-    <span>GRATING ANGLE / 光栅转角 <output id="gratOut">240°</output></span>
-    <input id="gratingAngle" type="range" min="0" max="360" step="1" value="240">
-  </label>
-  <label class="slider">
-    <span>THUNDER / 雷色窗口半宽 <output id="thunderOut">12°</output></span>
-    <input id="thunderWidth" type="range" min="4" max="20" step="0.5" value="12">
-  </label>
+    <section class="grp">
+      <div class="grp-label">活域 <em>两死一生</em></div>
+      <div class="seg" id="aliveSeg">
+        <button type="button" data-alive="sun">日</button>
+        <button type="button" data-alive="moon" class="on">月</button>
+        <button type="button" data-alive="star">星</button>
+      </div>
+    </section>
 
-  <div class="source-head">RING BRIGHTNESS / 三环亮度 · 两死一生</div>
-  <label class="slider compact">
-    <span><b class="sa" style="color:#8fd3f4">A</b> 环 A <output id="brightAOut">0.55</output></span>
-    <input id="brightA" type="range" min="0" max="2.5" step="0.01" value="0.55">
-  </label>
-  <label class="slider compact">
-    <span><b class="sa" style="color:#8fd3f4">B</b> 环 B <output id="brightBOut">0.68</output></span>
-    <input id="brightB" type="range" min="0" max="2.5" step="0.01" value="0.68">
-  </label>
-  <label class="slider compact">
-    <span><b class="sa" style="color:#b9a6ff">C</b> 环 C <output id="brightCOut">1.15</output></span>
-    <input id="brightC" type="range" min="0" max="2.5" step="0.01" value="1.15">
-  </label>
+    <section class="grp">
+      <div class="grp-label">配色</div>
+      <div class="seg">
+        <button class="active" id="themeBase" type="button" aria-pressed="true">原色</button>
+        <button id="themeDark" type="button" aria-pressed="false">深色</button>
+      </div>
+    </section>
 
+    <section class="grp">
+      <div class="grp-label">显示</div>
+      <div class="toggles">
+        <label class="switch"><input id="showLabels" type="checkbox" checked><span>标签</span></label>
+        <label class="switch"><input id="toggleEclipse" type="checkbox" checked><span>日食</span></label>
+      </div>
+    </section>
 
-  <div class="source-head">PALETTE / 元素配色</div>
-  <div class="row">
-    <button class="btn active" id="themeBase" type="button" aria-pressed="true">原色</button>
-    <button class="btn" id="themeDark" type="button" aria-pressed="false">深色变体</button>
+    <section class="grp grp-actions">
+      <button class="btn" id="auto" type="button" aria-pressed="false">自动旋转</button>
+      <button class="btn" id="reset" type="button">重置视角</button>
+    </section>
+
+    <p class="note">三圆 = 日 / 月 / 星三域；七元素各占一座，<b>雷</b>在中央三重交叠；三圆两两交叠加中央交叠 = 四块区域，读作四影。</p>
+
+    <details class="adv">
+      <summary>已退役控件</summary>
+      <div class="row">
+        <button class="btn" id="toggleRun" type="button">旋转</button>
+        <button class="btn" id="freezeReset" type="button">冻结重置</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="stepThunder" type="button">下一交点</button>
+        <span></span>
+      </div>
+      <label class="slider compact"><span>光栅转角 <output id="gratOut">240°</output></span><input id="gratingAngle" type="range" min="0" max="360" step="1" value="240"></label>
+      <label class="slider compact"><span>闪耀窗口 <output id="thunderOut">12°</output></span><input id="thunderWidth" type="range" min="4" max="20" step="0.5" value="12"></label>
+      <label class="slider compact"><span>环亮度 A <output id="brightAOut">0.55</output></span><input id="brightA" type="range" min="0" max="2.5" step="0.01" value="0.55"></label>
+      <label class="slider compact"><span>环亮度 B <output id="brightBOut">0.68</output></span><input id="brightB" type="range" min="0" max="2.5" step="0.01" value="0.68"></label>
+      <label class="slider compact"><span>环亮度 C <output id="brightCOut">1.15</output></span><input id="brightC" type="range" min="0" max="2.5" step="0.01" value="1.15"></label>
+      <label class="switch"><input id="showGrooves" type="checkbox" checked><span>刻线</span></label>
+    </details>
   </div>
-
-  <div class="row">
-    <button class="btn" id="auto" type="button" aria-pressed="false">Auto orbit</button>
-    <button class="btn" id="reset" type="button">Reset</button>
-  </div>
-  <div class="checks">
-    <label><input id="showLabels" type="checkbox" checked> 标签</label>
-    <label><input id="showGrooves" type="checkbox" checked> 刻线</label>
-  </div>
-  <p class="note">三环 = 三月各自光栅的<code>罗兰圆</code>（R = 2ρ，半径就是环半径）。环上只有可见光张角那一段被照亮，颜色由 <code>d(sinα+sinβ)=mλ</code> 给出；交点是两条罗兰圆的交点，<code>雷 = 闪耀像点扫过交点</code>。</p>
 </aside>
 
 <div class="legend spectrum-legend" aria-label="七元素对应波长">
@@ -4316,7 +4421,8 @@ window.M3 = {
     showLabels: true,
     showGrooves: true,
     showEclipse: true,
-    bandMode: new URLSearchParams(location.search).has('sym') ? 'symbolic' : 'phys',
+    bandMode: 'structure',
+    aliveDomain: new URLSearchParams(location.search).get('alive') || 'moon',
     brightness: { A: 0.55, B: 0.68, C: 1.15 },
   };
   const palette = () => PALETTES[state.theme];
@@ -4340,6 +4446,30 @@ window.M3 = {
     },
   ];
 
+  /* ---------- 结构层数据：三域（日/月/星）+ 七座 + 四反应区 ---------- */
+  const DOMAINS = [
+    { key: 'sun',  name: '日', cx: 0,     cz: 3.5,   color: '#EC4923' },
+    { key: 'moon', name: '月', cx: -3.03, cz: -1.75, color: '#498FCC' },
+    { key: 'star', name: '星', cx: 3.03,  cz: -1.75, color: '#35AACC' },
+  ];
+
+  const SEATS = [
+    { key: 'fire',    name: '火', host: '日',       x: 0, z: 3.5 + RHO },
+    { key: 'grass',   name: '草', host: '月',       x: -3.03 - RHO * Math.SQRT1_2, z: -1.75 + RHO * Math.SQRT1_2 },
+    { key: 'water',   name: '水', host: '月',       x: -3.03 - RHO * Math.SQRT1_2, z: -1.75 - RHO * Math.SQRT1_2 },
+    { key: 'anemo',   name: '风', host: '星',       x: 3.03 + RHO * Math.SQRT1_2,  z: -1.75 + RHO * Math.SQRT1_2 },
+    { key: 'ice',     name: '冰', host: '星',       x: 3.03 + RHO * Math.SQRT1_2,  z: -1.75 - RHO * Math.SQRT1_2 },
+    { key: 'thunder', name: '雷', host: '中心',     x: 0, z: 0 },
+    { key: 'geo',     name: '岩', host: '月∩星',    x: 0, z: -5.1 },
+  ];
+
+  // 四区 = 四影：每块交叠区读成一影，附该区的反应族
+  const ZONES = [
+    { shade: '生', name: '燃烧·绽放', sub: '日∩月',      x: -3.55, z: 0.55 },
+    { shade: '空', name: '扩散',      sub: '日∩星',      x: 3.55,  z: 0.55 },
+    { shade: '死', name: '超载·感电·超导', sub: '日∩月∩星', x: 0, z: 5.15 },
+    { shade: '时', name: '结晶',      sub: '月∩星',      x: 0,     z: -4.15 },
+  ];
   // 六个交点：方位角 30° + 60°k，各由两条环共同确认
   const NODES = [
     { key: 'ice', name: '冰', x: 6.0622 * S, z: 3.5 * S, angle: 30, rings: 'A∩B' },
@@ -4441,18 +4571,22 @@ window.M3 = {
   }
 
   function textSprite(text, color, scale) {
+    const font = '600 34px "STSong", "Songti SC", serif';
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = font;
+    const w = Math.max(128, Math.ceil(probe.measureText(text).width) + 44);
     const cv = document.createElement('canvas');
-    cv.width = 128;
+    cv.width = w;
     cv.height = 64;
     const g = cv.getContext('2d');
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.font = '600 34px "STSong", "Songti SC", serif';
+    g.font = font;
     g.lineWidth = 7;
     g.strokeStyle = 'rgba(0,0,0,.85)';
-    g.strokeText(text, 64, 34);
+    g.strokeText(text, w / 2, 34);
     g.fillStyle = color;
-    g.fillText(text, 64, 34);
+    g.fillText(text, w / 2, 34);
     const tex = new M.CanvasTexture(cv);
     tex.colorSpace = M.SRGBColorSpace;
     const sp = new M.Sprite(new M.SpriteMaterial({
@@ -4460,10 +4594,9 @@ window.M3 = {
     }));
     sp.renderOrder = 30;
     const k = scale || 1;
-    sp.scale.set(0.48 * k, 0.24 * k, 1);
+    sp.scale.set((w / 128) * 0.48 * k, 0.24 * k, 1);
     return sp;
   }
-
   /* ---------------- 5. DOM 引用（先取，后接线） ---------------- */
   const sunInput = document.getElementById('sunHeight');
   const eclipseInput = document.getElementById('eclipseRadius');
@@ -4499,8 +4632,9 @@ window.M3 = {
   const labelsCheck = document.getElementById('showLabels');
   const groovesCheck = document.getElementById('showGrooves');
   const panelEl = document.querySelector('.panel');
-  const panelToggle = document.getElementById('panelToggle');
-  const panelClose = document.getElementById('panelClose');
+  const panelCollapse = document.getElementById('panelCollapse');
+  const panelOpen = document.getElementById('panelOpen');
+  const aliveSeg = document.getElementById('aliveSeg');
   const hudEl = document.getElementById('hud');
   const hudStateEl = document.getElementById('hudState');
   const hudInfoEl = document.getElementById('hudInfo');
@@ -4534,10 +4668,10 @@ window.M3 = {
     clock = new M.Clock();
 
     camera = new M.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(8.2, 5.6, 11.2);
+    camera.position.set(0.9, 8.4, 6.6);
 
     controls = new M.OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0.75, 0);
+    controls.target.set(0, -0.15, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
     controls.minDistance = 3.6;
@@ -4548,8 +4682,8 @@ window.M3 = {
     controls.autoRotateSpeed = 0.55;
     if (EMBED) {
       // 站点首页的小画框：稍微拉近，避免底片显得太小
-      camera.position.set(7.2, 5.1, 9.9);
-      controls.target.set(0, 0.8, 0);
+      camera.position.set(0.9, 8.0, 7.2);
+      controls.target.set(0, -0.1, 0);
     }
     controls.update();
   } catch (err) {
@@ -4574,13 +4708,17 @@ window.M3 = {
         void main() {
           vec3 d = normalize(vP);
           float h = d.y * 0.5 + 0.5;
-          vec3 low = vec3(0.004, 0.010, 0.020);
-          vec3 mid = vec3(0.016, 0.048, 0.078);
-          vec3 top = vec3(0.005, 0.012, 0.026);
-          vec3 col = mix(low, mid, smoothstep(0.0, 0.46, h));
-          col = mix(col, top, smoothstep(0.56, 1.0, h));
-          float band = exp(-pow((h - 0.46) * 6.5, 2.0));
-          col += vec3(0.022, 0.068, 0.105) * band;
+          vec3 deep = vec3(0.003, 0.006, 0.014);
+          vec3 haze = vec3(0.018, 0.042, 0.072);
+          vec3 col = mix(deep, haze, smoothstep(0.10, 0.52, h));
+          float rim = exp(-pow((h - 0.44) * 3.4, 2.0));
+          col += vec3(0.070, 0.040, 0.105) * rim * 0.55;
+          float band = exp(-pow((h - 0.47) * 7.0, 2.0));
+          col += vec3(0.024, 0.070, 0.110) * band;
+          float b1 = exp(-dot(d.xz - vec2(-0.55, 0.35), d.xz - vec2(-0.55, 0.35)) * 3.2);
+          float b2 = exp(-dot(d.xz - vec2(0.55, -0.30), d.xz - vec2(0.55, -0.30)) * 4.0);
+          col += vec3(0.012, 0.016, 0.032) * b1;
+          col += vec3(0.026, 0.010, 0.024) * b2;
           gl_FragColor = vec4(col, 1.0);
         }`,
     })
@@ -4645,8 +4783,8 @@ window.M3 = {
   const plate = new M.Mesh(
     new M.CylinderGeometry(3.35, 3.58, 0.12, 96),
     new M.MeshPhysicalMaterial({
-      color: 0x101b2c, metalness: 0.58, roughness: 0.24,
-      envMapIntensity: 0.72, clearcoat: 0.35, clearcoatRoughness: 0.3,
+      color: 0x0d1626, metalness: 0.45, roughness: 0.34,
+      envMapIntensity: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.4,
     })
   );
   plate.position.y = PLANE_Y - 0.06;
@@ -4892,6 +5030,79 @@ window.M3 = {
     lay.add(mesh);
     ringGroup.add(lay);
     return { ring, mesh, mat, seed };
+  }
+  /* ---------------- 结构层：三域 / 七座 / 四区 ---------------- */
+  const structRoot = new M.Group();
+  structRoot.rotation.y = 0.63;   // 让"日"朝向默认视角的屏幕上方
+  scene.add(structRoot);
+  const domainGroup = new M.Group();
+  const seatGroup = new M.Group();
+  const zoneGroup = new M.Group();
+  structRoot.add(domainGroup, seatGroup, zoneGroup);
+
+  function buildDomains() {
+    disposeGroup(domainGroup);
+    DOMAINS.forEach((d) => {
+      const cx = d.cx * S;
+      const cz = -d.cz * S;
+      const alive = d.key === state.aliveDomain;
+      const ring = new M.Mesh(
+        new M.RingGeometry(RING_R - (alive ? 0.105 : 0.075), RING_R + (alive ? 0.105 : 0.075), 320, 1),
+        new M.MeshBasicMaterial({
+          color: new M.Color(d.color), transparent: true, opacity: alive ? 0.85 : 0.22,
+          side: M.DoubleSide, blending: M.AdditiveBlending, depthWrite: false, toneMapped: false,
+        })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(cx, RING_Y, cz);
+      domainGroup.add(ring);
+
+      const dir = new M.Vector3(cx, 0, cz).normalize();
+      const tag = textSprite(d.name, d.color, alive ? 1.7 : 1.2);
+      tag.position.set(cx + dir.x * (RING_R + 0.34), PLANE_Y + 0.30, cz + dir.z * (RING_R + 0.34));
+      tag.visible = state.showLabels;
+      domainGroup.add(tag);
+    });
+  }
+
+  function buildSeats() {
+    disposeGroup(seatGroup);
+    SEATS.forEach((s) => {
+      const x = s.x * S;
+      const z = -s.z * S;
+      const color = palette()[s.key];
+      const core = new M.Mesh(
+        new M.SphereGeometry(s.key === 'thunder' ? 0.085 : 0.062, 20, 16),
+        new M.MeshBasicMaterial({ color: new M.Color(color), toneMapped: false })
+      );
+      core.position.set(x, PLANE_Y + 0.10, z);
+      seatGroup.add(core);
+
+      const halo = glowSprite(color, s.key === 'thunder' ? 1.05 : 0.72, s.key === 'thunder' ? 0.85 : 0.55);
+      halo.position.set(x, PLANE_Y + 0.10, z);
+      seatGroup.add(halo);
+
+      const tag = textSprite(s.name, color, 1.05);
+      tag.position.set(x, PLANE_Y + 0.46, z);
+      tag.visible = state.showLabels;
+      seatGroup.add(tag);
+    });
+  }
+
+  function buildZones() {
+    disposeGroup(zoneGroup);
+    ZONES.forEach((zn) => {
+      const x = zn.x * S;
+      const z = -zn.z * S;
+      const tag = textSprite(`${zn.shade} · ${zn.name}`, '#e2e9f4', 0.95);
+      tag.position.set(x, PLANE_Y + 0.32, z);
+      tag.visible = state.showLabels;
+      zoneGroup.add(tag);
+      const sub = textSprite(zn.sub, '#6f7f96', 0.55);
+      sub.position.set(x, PLANE_Y + 0.18, z);
+      sub.visible = state.showLabels;
+      zoneGroup.add(sub);
+    });
   }
   function buildRings() {
     disposeGroup(ringGroup);
@@ -5161,6 +5372,11 @@ window.M3 = {
   }
 
   function updateThunder() {
+    if (!nodeViews.length) {
+      if (hudStateEl) hudStateEl.textContent = '三域 · 七座 · 四影';
+      if (hudInfoEl) hudInfoEl.textContent = `活域：${state.aliveDomain === 'moon' ? '月' : state.aliveDomain === 'sun' ? '日' : '星'} · 两死一生`;
+      return;
+    }
     const p = palette();
     const thunderColor = new M.Color(p.thunder);
     const glowColor = new M.Color(p.thunderGlow);
@@ -5208,11 +5424,10 @@ window.M3 = {
   }
 
   /* ---------------- 16. 装配 ---------------- */
-  buildRings();
-  buildNodes();
-  buildMirrors();
+  buildDomains();
+  buildSeats();
+  buildZones();
   updateEclipse();
-  updateThunder();
 
   /* ---------------- 17. UI 同步 ---------------- */
   function syncSun() {
@@ -5255,9 +5470,9 @@ window.M3 = {
       state.brightness[key] = Number(brightInputs[key].value);
       brightOuts[key].textContent = state.brightness[key].toFixed(2);
     });
-    buildRings();
-    syncGratingUniforms();
-    syncPhysCenters();
+    buildDomains();
+    buildSeats();
+    buildZones();
   }
 
   function syncGratingUniforms() {
@@ -5277,11 +5492,9 @@ window.M3 = {
     themeBase.setAttribute('aria-pressed', String(theme === 'base'));
     themeDark.classList.toggle('active', theme === 'dark');
     themeDark.setAttribute('aria-pressed', String(theme === 'dark'));
-    buildRings();
-    buildNodes();
-    buildMirrors();
-    syncGratingUniforms();
-    updateThunder();
+    buildDomains();
+    buildSeats();
+    buildZones();
   }
 
   function setRunning(run) {
@@ -5296,9 +5509,7 @@ window.M3 = {
 
   function setEclipseVisible(show) {
     state.showEclipse = show;
-    eclipseBtn.textContent = show ? '日食' : '日食已关';
-    eclipseBtn.classList.toggle('active', show);
-    eclipseBtn.setAttribute('aria-pressed', String(show));
+    if (eclipseBtn && eclipseBtn.type === 'checkbox') eclipseBtn.checked = show;
     updateEclipse();
   }
 
@@ -5328,13 +5539,23 @@ window.M3 = {
     syncThunderWidth();
     syncBrightness();
     applyTheme('base');
-    camera.position.set(8.2, 5.6, 11.2);
-    controls.target.set(0, 0.75, 0);
+    camera.position.set(0.9, 8.4, 6.6);
+    controls.target.set(0, -0.15, 0);
     controls.update();
   }
 
-  panelToggle.addEventListener('click', () => panelEl.classList.add('open'));
-  panelClose.addEventListener('click', () => panelEl.classList.remove('open'));
+  if (panelCollapse) panelCollapse.addEventListener('click', () => document.body.classList.add('side-collapsed'));
+  if (panelOpen) panelOpen.addEventListener('click', () => document.body.classList.remove('side-collapsed'));
+  if (aliveSeg) {
+    aliveSeg.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('button[data-alive]');
+      if (!btn) return;
+      state.aliveDomain = btn.dataset.alive;
+      [...aliveSeg.querySelectorAll('button')].forEach((b) => b.classList.toggle('on', b === btn));
+      buildDomains();
+      updateThunder();
+    });
+  }
   sunInput.addEventListener('input', syncSun);
   eclipseInput.addEventListener('input', syncEclipse);
   gratingInput.addEventListener('input', syncGrating);
@@ -5372,10 +5593,14 @@ window.M3 = {
   }
   stepBtn.addEventListener('click', goNextBlaze);
   if (embedStepBtn) embedStepBtn.addEventListener('click', goNextBlaze);
-  eclipseBtn.addEventListener('click', () => setEclipseVisible(!state.showEclipse));
+  eclipseBtn.addEventListener('change', () => setEclipseVisible(eclipseBtn.checked));
   labelsCheck.addEventListener('change', () => {
     state.showLabels = labelsCheck.checked;
-    labelGroup.visible = state.showLabels;
+    if (labelGroup) labelGroup.visible = state.showLabels;
+    [domainGroup, seatGroup, zoneGroup].forEach((g) => {
+      if (!g) return;
+      g.traverse((o) => { if (o.isSprite) o.visible = state.showLabels; });
+    });
   });
   groovesCheck.addEventListener('change', () => {
     state.showGrooves = groovesCheck.checked;
