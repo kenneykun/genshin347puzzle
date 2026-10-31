@@ -441,7 +441,7 @@
       <button class="btn" id="reset" type="button">重置视角</button>
     </section>
 
-    <p class="note">三圆 = 日 / 月 / 星三域；七元素各占一个<b>交叉焦点</b>（六边形 60° 一个），<b>雷</b>在正中。<br>四影：<b>生</b> 日∩月 燃烧·绽放 · <b>空</b> 日∩星 扩散 · <b>死</b> 日∩月∩星 超载·感电·超导 · <b>时</b> 月∩星 结晶。</p>
+    <p class="note">三圆 = 日 / 月 / 星三域；六个元素各占一个<b>交叉焦点</b>（六边形 60° 一个）。<b>雷</b>不在座位上——它能和任何元素反应，所以它是<b>盘面本身</b>：一层始终存在的静电。<br>四影：<b>生</b> 日∩月 燃烧·绽放 · <b>空</b> 日∩星 扩散 · <b>死</b> 中央 超载·感电·超导 · <b>时</b> 月∩星 结晶。</p>
 
     <details class="adv">
       <summary>已退役控件</summary>
@@ -4825,34 +4825,15 @@ window.M3 = {
   boltPlate.renderOrder = -3;   // 环和座位都画在它上面，电感从盘底透出来
   scene.add(boltPlate);
 
-  const BOLT_SEATS = SEATS.filter((s) => s.key !== 'thunder');
   let boltClock = -1;
-  function boltPath(g, x1, y1, x2, y2, time, seed, amp, steps, width, alpha) {
-    g.beginPath();
-    g.moveTo(x1, y1);
-    for (let k = 1; k <= steps; k++) {
-      const u = k / steps;
-      const taper = 1 - Math.abs(u - 0.55) * 1.2;
-      const jx = (Math.sin(time * 7.1 + seed * 3.3 + k * 2.1) * 0.6 + Math.sin(time * 13.7 + k * 1.9 + seed)) * amp * taper;
-      const jy = (Math.cos(time * 6.3 + seed * 2.1 + k * 1.7) * 0.6 + Math.cos(time * 11.3 + k * 2.3 + seed)) * amp * taper;
-      g.lineTo(x1 + (x2 - x1) * u + jx, y1 + (y2 - y1) * u + jy);
-    }
-    g.strokeStyle = `rgba(150,120,255,${0.55 * alpha})`;
-    g.lineWidth = width * 2.4;
-    g.shadowColor = 'rgba(130,100,255,.95)';
-    g.shadowBlur = 26;
-    g.stroke();
-    g.strokeStyle = `rgba(196,172,255,${0.88 * alpha})`;
-    g.lineWidth = width;
-    g.shadowBlur = 12;
-    g.stroke();
-    g.strokeStyle = `rgba(244,240,255,${1.0 * alpha})`;
-    g.lineWidth = Math.max(1, width * 0.42);
-    g.shadowBlur = 5;
-    g.stroke();
-  }
 
-  function drawBolts(time) {
+  const hash01 = (n) => {
+    const x = Math.sin(n * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  // 全局静电：盘面上随机的短促电弧 + 一层电雾，没有中心、没有放射方向
+  function drawStatic(time) {
     const g = boltCtx;
     const W = boltCanvas.width;
     const cxp = W / 2;
@@ -4862,63 +4843,84 @@ window.M3 = {
     g.lineCap = 'round';
     g.lineJoin = 'round';
 
-    // 中央电场
-    const core = g.createRadialGradient(cxp, cyp, 0, cxp, cyp, rp * 0.5);
-    core.addColorStop(0, 'rgba(172,142,255,0.34)');
-    core.addColorStop(0.34, 'rgba(108,86,200,0.15)');
-    core.addColorStop(1, 'rgba(58,38,116,0)');
-    g.fillStyle = core;
+    // 整体带电的薄雾
+    const wash = g.createRadialGradient(cxp, cyp, rp * 0.12, cxp, cyp, rp);
+    wash.addColorStop(0, 'rgba(112,92,196,0.16)');
+    wash.addColorStop(0.55, 'rgba(96,80,180,0.10)');
+    wash.addColorStop(1, 'rgba(70,56,140,0.02)');
+    g.fillStyle = wash;
     g.beginPath();
-    g.arc(cxp, cyp, rp * 0.5, 0, Math.PI * 2);
+    g.arc(cxp, cyp, rp, 0, Math.PI * 2);
     g.fill();
 
-    // 由中心向外扩散的脉冲环（三道错相）
-    for (let r = 0; r < 3; r++) {
-      const u = (time * 0.34 + r / 3) % 1;
-      const rad = rp * (0.10 + u * 0.86);
-      const a = (1 - u) * 0.26;
+    const slot = Math.floor(time * 9);          // 电弧按 9fps 换位，保留一点粘滞感
+    const ARC_N = 16;
+    for (let i = 0; i < ARC_N; i++) {
+      const s = slot + i * 17.31;
+      const ang = hash01(s * 1.13) * Math.PI * 2;
+      const rr = Math.sqrt(hash01(s * 2.71)) * rp * 0.94;
+      const cx0 = cxp + Math.cos(ang) * rr;
+      const cy0 = cyp + Math.sin(ang) * rr;
+      const len = 16 + hash01(s * 3.37) * 74;
+      const dir = hash01(s * 5.91) * Math.PI * 2;
+      const life = hash01(s * 0.73);
+      const flick = 0.25 + 0.75 * Math.abs(Math.sin(time * 9 + i * 2.1));
+      const alpha = (0.18 + 0.5 * life) * flick;
+      const steps = 4 + Math.floor(hash01(s * 7.7) * 3);
+
       g.beginPath();
-      g.arc(cxp, cyp, rad, 0, Math.PI * 2);
-      g.strokeStyle = `rgba(168,140,255,${a * 1.5})`;
-      g.lineWidth = 2 + (1 - u) * 3;
-      g.shadowColor = 'rgba(130,100,255,.85)';
-      g.shadowBlur = 22;
-      g.stroke();
-    }
-
-    BOLT_SEATS.forEach((s, i) => {
-      const flick = 0.45 + 0.55 * Math.abs(Math.sin(time * (1.6 + i * 0.41) + i * 1.7));
-      const x2 = cxp + (s.x * S / 3.32) * (W / 2) * 0.99;
-      const y2 = cyp + (-s.z * S / 3.32) * (W / 2) * 0.99;
-      const seed = i * 1.37;
-
-      // 主弧
-      boltPath(g, cxp, cyp, x2, y2, time, seed, 16, 14, 3.4, flick);
-
-      // 两条分叉（在远端 55%–90% 处岔开）
-      for (let f = 0; f < 2; f++) {
-        const t0 = 0.52 + f * 0.16;
-        const bx = cxp + (x2 - cxp) * t0;
-        const by = cyp + (y2 - cyp) * t0;
-        const ang = Math.atan2(y2 - cyp, x2 - cxp) + (f === 0 ? 0.42 : -0.46) + Math.sin(time * 3 + i + f) * 0.12;
-        const len = Math.hypot(x2 - cxp, y2 - cyp) * (0.30 + 0.08 * Math.sin(time * 2.4 + f));
-        const ex = bx + Math.cos(ang) * len;
-        const ey = by + Math.sin(ang) * len;
-        boltPath(g, bx, by, ex, ey, time + f, seed + f * 2.3, 9, 7, 1.9, flick * 0.75);
+      g.moveTo(cx0, cy0);
+      let px = cx0;
+      let py = cy0;
+      for (let k = 1; k <= steps; k++) {
+        const u = k / steps;
+        const wob = (hash01(s + k * 4.1) - 0.5) * 26;
+        const nx = Math.cos(dir) * len * u - Math.sin(dir) * wob;
+        const ny = Math.sin(dir) * len * u + Math.cos(dir) * wob;
+        px = cx0 + nx;
+        py = cy0 + ny;
+        g.lineTo(px, py);
       }
+      g.strokeStyle = `rgba(146,120,240,${alpha * 0.55})`;
+      g.lineWidth = 5.2;
+      g.shadowColor = 'rgba(130,104,255,.9)';
+      g.shadowBlur = 20;
+      g.stroke();
+      g.strokeStyle = `rgba(206,188,255,${alpha})`;
+      g.lineWidth = 2.0;
+      g.shadowBlur = 8;
+      g.stroke();
+      g.strokeStyle = `rgba(246,242,255,${alpha * 0.9})`;
+      g.lineWidth = 0.9;
+      g.shadowBlur = 3;
+      g.stroke();
 
-      // 座位处的电晕
-      const halo = g.createRadialGradient(x2, y2, 0, x2, y2, 22 + 10 * flick);
-      halo.addColorStop(0, `rgba(226,214,255,${0.55 * flick})`);
-      halo.addColorStop(0.45, `rgba(168,140,255,${0.26 * flick})`);
-      halo.addColorStop(1, 'rgba(120,96,210,0)');
-      g.fillStyle = halo;
-      g.beginPath();
-      g.arc(x2, y2, 22 + 10 * flick, 0, Math.PI * 2);
-      g.fill();
-    });
-
+      // 弧端的一点火星
+      if (life > 0.62) {
+        const spark = g.createRadialGradient(px, py, 0, px, py, 9 + 7 * life);
+        spark.addColorStop(0, `rgba(232,222,255,${alpha * 0.9})`);
+        spark.addColorStop(1, 'rgba(150,124,240,0)');
+        g.fillStyle = spark;
+        g.beginPath();
+        g.arc(px, py, 9 + 7 * life, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
     boltTex.needsUpdate = true;
+  }
+  /* 带电荷的粒子：在盘面上方缓慢漂浮，忽明忽暗 */
+  const moteGroup = new M.Group();
+  scene.add(moteGroup);
+  const motes = [];
+  for (let i = 0; i < 28; i++) {
+    const sp = glowSprite('#bda6ff', 0.09 + Math.random() * 0.09, 0.55);
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(Math.random()) * 3.05;
+    const y = PLANE_Y + 0.05 + Math.random() * 0.5;
+    sp.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    sp.userData = { a, r, y, base: 0.35 + Math.random() * 0.5, speed: 0.12 + Math.random() * 0.22, ph: Math.random() * 6.283 };
+    moteGroup.add(sp);
+    motes.push(sp);
   }
   // 日食在底色盘上投下的暗斑（半径由阴影锥决定）
   const shadowBlob = new M.Mesh(
@@ -5205,7 +5207,7 @@ window.M3 = {
   }
   function buildSeats() {
     disposeGroup(seatGroup);
-    SEATS.forEach((s) => {
+    SEATS.filter((s) => s.key !== 'thunder').forEach((s) => {
       const x = s.x * S;
       const z = -s.z * S;
       const color = palette()[s.key];
@@ -5515,7 +5517,7 @@ window.M3 = {
 
   function updateThunder() {
     if (!nodeViews.length) {
-      if (hudStateEl) hudStateEl.textContent = '三域 · 七座 · 四影';
+      if (hudStateEl) hudStateEl.textContent = '三域 · 六座 + 电盘 · 四影';
       if (hudInfoEl) hudInfoEl.textContent = `活域：${state.aliveDomain === 'moon' ? '月' : state.aliveDomain === 'sun' ? '日' : '星'} · 两死一生`;
       return;
     }
@@ -5791,7 +5793,18 @@ window.M3 = {
 
     if (clock.elapsedTime - boltClock > 0.06) {
       boltClock = clock.elapsedTime;
-      drawBolts(clock.elapsedTime);
+      drawStatic(clock.elapsedTime);
+    }
+
+    const et = clock.elapsedTime;
+    for (let i = 0; i < motes.length; i++) {
+      const sp = motes[i];
+      const d = sp.userData;
+      d.a += dt * d.speed;
+      sp.position.x = Math.cos(d.a) * d.r;
+      sp.position.z = Math.sin(d.a) * d.r;
+      sp.position.y = d.y + Math.sin(et * 0.9 + d.ph) * 0.06;
+      sp.material.opacity = d.base * (0.35 + 0.65 * Math.abs(Math.sin(et * 1.6 + d.ph)));
     }
 
     renderer.render(scene, camera);
