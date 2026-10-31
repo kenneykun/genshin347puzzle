@@ -4787,7 +4787,7 @@ window.M3 = {
   const plate = new M.Mesh(
     new M.CylinderGeometry(3.35, 3.58, 0.12, 96),
     new M.MeshPhysicalMaterial({
-      color: 0x0d1626, metalness: 0.45, roughness: 0.34,
+      color: 0x0d1626, metalness: 0.45, roughness: 0.34, emissive: 0x1a1036, emissiveIntensity: 0.55,
       envMapIntensity: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.4,
     })
   );
@@ -4805,6 +4805,74 @@ window.M3 = {
   plateRim.position.y = PLANE_Y + 0.002;
   scene.add(plateRim);
 
+  /* 雷电盘：从中央（雷座）向六个焦点放射的电弧，画在画布上再叠到盘面 */
+  const boltCanvas = document.createElement('canvas');
+  boltCanvas.width = 640;
+  boltCanvas.height = 640;
+  const boltCtx = boltCanvas.getContext('2d');
+  const boltTex = new M.CanvasTexture(boltCanvas);
+  boltTex.colorSpace = M.SRGBColorSpace;
+  const boltPlate = new M.Mesh(
+    new M.RingGeometry(0.001, 3.32, 96),
+    new M.MeshBasicMaterial({
+      map: boltTex, transparent: true, blending: M.AdditiveBlending,
+      depthWrite: false, side: M.DoubleSide, toneMapped: false,
+    })
+  );
+  boltPlate.rotation.x = -Math.PI / 2;
+  boltPlate.position.y = PLANE_Y + 0.005;
+  scene.add(boltPlate);
+
+  const BOLT_SEATS = SEATS.filter((s) => s.key !== 'thunder');
+  let boltClock = -1;
+  function drawBolts(time) {
+    const g = boltCtx;
+    const W = boltCanvas.width;
+    const cxp = W / 2;
+    const cyp = W / 2;
+    const rp = (W / 2) * 0.99;
+    g.clearRect(0, 0, W, W);
+
+    const core = g.createRadialGradient(cxp, cyp, 0, cxp, cyp, rp * 0.46);
+    core.addColorStop(0, 'rgba(160,130,255,0.40)');
+    core.addColorStop(0.4, 'rgba(105,87,194,0.16)');
+    core.addColorStop(1, 'rgba(60,40,120,0)');
+    g.fillStyle = core;
+    g.beginPath();
+    g.arc(cxp, cyp, rp * 0.46, 0, Math.PI * 2);
+    g.fill();
+
+    BOLT_SEATS.forEach((s, i) => {
+      const flick = 0.40 + 0.60 * Math.abs(Math.sin(time * (1.6 + i * 0.41) + i * 1.7));
+      const x2 = cxp + (s.x * S / 3.32) * (W / 2) * 0.99;
+      const y2 = cyp + (-s.z * S / 3.32) * (W / 2) * 0.99;
+      const steps = 12;
+      g.beginPath();
+      g.moveTo(cxp, cyp);
+      for (let k = 1; k <= steps; k++) {
+        const u = k / steps;
+        const amp = (1 - Math.abs(u - 0.5) * 2) * 18;
+        const jx = (Math.sin(time * 7.1 + i * 3.3 + k * 2.1) * 0.6 + Math.sin(time * 13.7 + k * 1.9)) * amp;
+        const jy = (Math.cos(time * 6.3 + i * 2.1 + k * 1.7) * 0.6 + Math.cos(time * 11.3 + k * 2.3)) * amp;
+        g.lineTo(cxp + (x2 - cxp) * u + jx, cyp + (y2 - cyp) * u + jy);
+      }
+      g.strokeStyle = `rgba(176,148,255,${0.55 * flick})`;
+      g.lineWidth = 3.4;
+      g.shadowColor = 'rgba(140,110,255,.95)';
+      g.shadowBlur = 20;
+      g.stroke();
+      g.strokeStyle = `rgba(238,230,255,${0.85 * flick})`;
+      g.lineWidth = 1.2;
+      g.shadowBlur = 8;
+      g.stroke();
+
+      g.beginPath();
+      g.arc(x2, y2, 9 + 6 * flick, 0, Math.PI * 2);
+      g.fillStyle = `rgba(195,170,255,${0.20 * flick})`;
+      g.fill();
+    });
+    boltTex.needsUpdate = true;
+  }
   // 日食在底色盘上投下的暗斑（半径由阴影锥决定）
   const shadowBlob = new M.Mesh(
     new M.CircleGeometry(1, 72),
@@ -5669,6 +5737,11 @@ window.M3 = {
     dustFar.rotation.y += dt * 0.004;
     dustNear.rotation.y -= dt * 0.006;
     sunHalo.scale.setScalar(0.95 + Math.sin(clock.elapsedTime * 1.4) * 0.04);
+
+    if (clock.elapsedTime - boltClock > 0.06) {
+      boltClock = clock.elapsedTime;
+      drawBolts(clock.elapsedTime);
+    }
 
     renderer.render(scene, camera);
 
