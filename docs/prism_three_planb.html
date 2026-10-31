@@ -441,7 +441,7 @@
       <button class="btn" id="reset" type="button">重置视角</button>
     </section>
 
-    <p class="note">三圆 = 日 / 月 / 星三域；七元素各占一座，<b>雷</b>在中央三重交叠；三圆两两交叠加中央交叠 = 四块区域，读作四影。</p>
+    <p class="note">三圆 = 日 / 月 / 星三域；七元素各占一个<b>交叉焦点</b>（六边形 60° 一个），<b>雷</b>在正中。<br>四影：<b>生</b> 日∩月 燃烧·绽放 · <b>空</b> 日∩星 扩散 · <b>死</b> 日∩月∩星 超载·感电·超导 · <b>时</b> 月∩星 结晶。</p>
 
     <details class="adv">
       <summary>已退役控件</summary>
@@ -4349,6 +4349,7 @@ window.M3 = {
 
 </script>
 <script>
+
 /* =====================================================================
    三月 · 光栅 — 天理点光源 / 日食遮挡 / 三面弧面闪耀光栅
    ---------------------------------------------------------------------
@@ -4453,22 +4454,25 @@ window.M3 = {
     { key: 'star', name: '星', cx: 3.03,  cz: -1.75, color: '#35AACC' },
   ];
 
+  // 七座 = 六个交叉焦点（六边形，60° 一个）+ 中央
+  // 角度顺序（自 90° 起顺时针）：火 90 / 风 30 / 冰 330 / 岩 270 / 水 210 / 草 150
   const SEATS = [
-    { key: 'fire',    name: '火', host: '日',       x: 0, z: 3.5 + RHO },
-    { key: 'grass',   name: '草', host: '月',       x: -3.03 - RHO * Math.SQRT1_2, z: -1.75 + RHO * Math.SQRT1_2 },
-    { key: 'water',   name: '水', host: '月',       x: -3.03 - RHO * Math.SQRT1_2, z: -1.75 - RHO * Math.SQRT1_2 },
-    { key: 'anemo',   name: '风', host: '星',       x: 3.03 + RHO * Math.SQRT1_2,  z: -1.75 + RHO * Math.SQRT1_2 },
-    { key: 'ice',     name: '冰', host: '星',       x: 3.03 + RHO * Math.SQRT1_2,  z: -1.75 - RHO * Math.SQRT1_2 },
-    { key: 'thunder', name: '雷', host: '中心',     x: 0, z: 0 },
-    { key: 'geo',     name: '岩', host: '月∩星',    x: 0, z: -5.1 },
+    { key: 'fire',    name: '火', x: 0,       z: 3.5 },
+    { key: 'anemo',   name: '风', x: 6.0622,  z: 3.5 },
+    { key: 'ice',     name: '冰', x: 3.03,    z: -1.75 },
+    { key: 'geo',     name: '岩', x: 0,       z: -7 },
+    { key: 'water',   name: '水', x: -3.03,   z: -1.75 },
+    { key: 'grass',   name: '草', x: -6.0622, z: 3.5 },
+    { key: 'thunder', name: '雷', x: 0,       z: 0 },
   ];
 
   // 四区 = 四影：每块交叠区读成一影，附该区的反应族
+  // 四区 = 四影：三块两两交叠 + 中央三重交叠（中央那块贴近雷）
   const ZONES = [
-    { shade: '生', name: '燃烧·绽放', sub: '日∩月',      x: -3.55, z: 0.55 },
-    { shade: '空', name: '扩散',      sub: '日∩星',      x: 3.55,  z: 0.55 },
-    { shade: '死', name: '超载·感电·超导', sub: '日∩月∩星', x: 0, z: 5.15 },
-    { shade: '时', name: '结晶',      sub: '月∩星',      x: 0,     z: -4.15 },
+    { shade: '生', name: '燃烧·绽放', sub: '日∩月', x: -2.75, z: 4.35 },
+    { shade: '空', name: '扩散',      sub: '日∩星', x: 2.75,  z: 4.35 },
+
+    { shade: '时', name: '结晶',      sub: '月∩星', x: 0,     z: -4.9 },
   ];
   // 六个交点：方位角 30° + 60°k，各由两条环共同确认
   const NODES = [
@@ -5664,6 +5668,7 @@ window.M3 = {
     showFallback(err);
   }
 })();
+
 
 </script>
 </body>
