@@ -5006,16 +5006,6 @@ window.M3 = {
       label.visible = state.showLabels;
       labelGroup.add(label);
 
-      const column = new M.Mesh(
-        new M.CylinderGeometry(0.035, 0.19, 1.5, 22, 1, true),
-        new M.MeshBasicMaterial({
-          color: new M.Color(palette().thunderGlow),
-          transparent: true, opacity: 0, blending: M.AdditiveBlending,
-          depthWrite: false, side: M.DoubleSide, toneMapped: false,
-        })
-      );
-      column.position.set(node.x, PLANE_Y + 0.78, node.z);
-      thunderGroup.add(column);
 
       const halo = glowSprite(palette().thunderGlow, 1.0, 0);
       halo.position.set(node.x, PLANE_Y + 0.10, node.z);
@@ -5039,7 +5029,7 @@ window.M3 = {
       thunderLabel.visible = false;
       thunderGroup.add(thunderLabel);
 
-      nodeViews.push({ node, marker, label, column, halo, spark, thunderLabel, arclets });
+      nodeViews.push({ node, marker, label, halo, spark, thunderLabel, arclets });
     });
   }
 
@@ -5225,15 +5215,12 @@ window.M3 = {
       view.marker.material.opacity = 0.85 + mask * 0.15;
       view.marker.scale.setScalar(1 + mask * 1.1);
 
-      view.column.material.color.copy(thunderColor);
-      view.column.material.opacity = mask * (state.bandMode === 'phys' ? 0.34 : 0.5);
-      view.column.scale.set(1 + mask * 0.5, 0.45 + mask * 0.9, 1 + mask * 0.5);
 
-      view.halo.material.opacity = mask * 0.72;
+      view.halo.material.opacity = mask * 0.9;
       view.halo.scale.setScalar(1.1 + mask * 1.6);
 
       view.arclets.forEach((arc) => { arc.material.opacity = mask * 0.85; });
-      view.spark.material.opacity = mask * 0.7;
+      view.spark.material.opacity = mask * 0.95;
       view.spark.scale.setScalar(1 + mask * 0.9);
       view.thunderLabel.visible = mask > 0.05;
 
