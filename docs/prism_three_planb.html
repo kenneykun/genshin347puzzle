@@ -269,7 +269,7 @@
   <div class="title">
     <div class="kicker">Grating lab / 01 天理 · 01 日食 · 03 光栅</div>
     <h1>三月 · 光栅</h1>
-    <p>天理是底色盘上方被日食遮挡的点光源，直射光到不了盘心；三月以弧面闪耀光栅在阴影外接光，反射衍射到底色盘完成分色与照明。雷色不是独立谱带，而是光栅转动时扫过交点的闪耀高亮。</p>
+    <p>三月悬在最上方，接收中间那盏天理的上行光，再反射回底色盘完成分色与照明；天理直射盘面的下行光被遮挡体挡住，盘面只吃到经三月中介过的光。雷色不是独立谱带，而是光栅转动时扫过交点的闪耀高亮。</p>
   </div>
 </header>
 
@@ -290,12 +290,12 @@
   </div>
 
   <label class="slider">
-    <span>SUN HEIGHT / 天理高度 <output id="sunOut">12.1</output></span>
-    <input id="sunHeight" type="range" min="6" max="16" step="0.1" value="12.1">
+    <span>SUN HEIGHT / 天理高度（盘面之上） <output id="sunOut">4.4</output></span>
+    <input id="sunHeight" type="range" min="2" max="9" step="0.1" value="4.4">
   </label>
   <label class="slider">
-    <span>ECLIPSE / 日食遮挡半径 <output id="eclOut">0.20</output></span>
-    <input id="eclipseRadius" type="range" min="0.08" max="0.6" step="0.01" value="0.2">
+    <span>ECLIPSE / 日食遮挡半径 <output id="eclOut">0.22</output></span>
+    <input id="eclipseRadius" type="range" min="0.08" max="0.7" step="0.01" value="0.22">
   </label>
   <label class="slider">
     <span>GRATING ANGLE / 光栅转角 <output id="gratOut">240°</output></span>
@@ -4250,8 +4250,11 @@ window.M3 = {
   const RHO = Math.sqrt(R_OUT * R_OUT - R_OUT * R_IN + R_IN * R_IN); // 6.0622
   const RING_R = RHO * S;                      // 1.9399
   const PLANE_Y = -1.835;                      // 底色盘顶面高度
-  const SUN_H = 12.1;                          // 天理高度 ≈ 2ρ（世界单位）
-  const MIRROR_LIFT = 1.15;                    // 三月弧镜悬于盘面之上
+  // 竖向次序（自下而上）：底色盘 → 遮挡体 → 天理 → 三月
+  // 三月在光源之上接收上行光，再反射回盘面；天理直射盘面的下行光被遮挡体挡住。
+  const SUN_H = 4.4;                           // 天理高度（世界单位 ≈ 0.72ρ）
+  const MOON_H = 10.4;                         // 三月高度（世界单位 ≈ 1.7ρ，始终在天理之上）
+  const OCC_RATIO = 0.62;                      // 遮挡体贴近天理，形成窄阴影锥
 
   /* ---------------- 1. 七元素调色板 ---------------- */
   const PALETTES = {
@@ -4491,10 +4494,10 @@ window.M3 = {
     clock = new M.Clock();
 
     camera = new M.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(7.2, 4.9, 9.9);
+    camera.position.set(8.2, 5.6, 11.2);
 
     controls = new M.OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0.35, 0);
+    controls.target.set(0, 0.75, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
     controls.minDistance = 3.6;
@@ -4505,8 +4508,8 @@ window.M3 = {
     controls.autoRotateSpeed = 0.55;
     if (EMBED) {
       // 站点首页的小画框：稍微拉近，避免底片显得太小
-      camera.position.set(6.3, 4.5, 8.7);
-      controls.target.set(0, 0.5, 0);
+      camera.position.set(7.2, 5.1, 9.9);
+      controls.target.set(0, 0.8, 0);
     }
     controls.update();
   } catch (err) {
@@ -4635,7 +4638,9 @@ window.M3 = {
 
   /* ---------------- 9. 天理 · 日食 ---------------- */
   const sunY = SUN_H * S;
-  const occY = sunY * 0.55;
+  const moonY = MOON_H * S;
+  const occYOf = (sy) => PLANE_Y + (sy - PLANE_Y) * OCC_RATIO;
+  let occY = occYOf(sunY);
 
   const sunGroup = new M.Group();
   sunGroup.position.set(0, sunY, 0);
@@ -4921,7 +4926,7 @@ window.M3 = {
 
     RINGS.forEach((ring) => {
       const rig = new M.Group();
-      rig.position.set(ring.x, PLANE_Y + MIRROR_LIFT, ring.z);
+      rig.position.set(ring.x, moonY, ring.z);
       rig.lookAt(sunGroup.position);            // local +Z 指向天理
 
       // 暗月本体：三月是不发光的镜体
@@ -5001,18 +5006,29 @@ window.M3 = {
     return mesh;
   }
 
+  const reflectMaterial = new M.MeshBasicMaterial({
+    color: 0xbfd8ff, transparent: true, opacity: 0.10,
+    blending: M.AdditiveBlending, depthWrite: false, side: M.DoubleSide, toneMapped: false,
+  });
+
   function buildBeams() {
     disposeGroup(beamGroup);
-    mirrorRigs.forEach(({ rig }) => {
+    mirrorRigs.forEach(({ rig, ring }) => {
+      // 上行：天理 → 三月（月在光源之上，只接收上行光）
       beamGroup.add(beamBetween(sunGroup.position, rig.position, 0.006));
+      // 下行：三月 → 各自的环（反射光落回底色盘）
+      const target = new M.Vector3(ring.x, PLANE_Y + 0.02, ring.z);
+      const beam = beamBetween(rig.position, target, 0.01);
+      beam.material = reflectMaterial;
+      beamGroup.add(beam);
     });
   }
 
   /* ---------------- 14. 日食几何（阴影锥半径） ---------------- */
   function umbraRadius() {
     const r = Number(eclipseInput.value);
-    const H = sunY - PLANE_Y;
-    const Ho = occY - PLANE_Y;
+    const H = sunGroup.position.y - PLANE_Y;
+    const Ho = eclipseGroup.position.y - PLANE_Y;
     return (H * r) / Math.max(H - Ho, 0.2);
   }
 
@@ -5102,7 +5118,8 @@ window.M3 = {
   function syncSun() {
     const h = Number(sunInput.value);
     sunGroup.position.set(0, h * S, 0);
-    eclipseGroup.position.set(0, h * S * 0.55, 0);
+    occY = occYOf(h * S);
+    eclipseGroup.position.set(0, occY, 0);
     sunLight.position.copy(sunGroup.position);
     sunOut.textContent = h.toFixed(1);
     updateEclipse();
@@ -5209,8 +5226,8 @@ window.M3 = {
     syncThunderWidth();
     syncBrightness();
     applyTheme('base');
-    camera.position.set(7.2, 4.9, 9.9);
-    controls.target.set(0, 0.35, 0);
+    camera.position.set(8.2, 5.6, 11.2);
+    controls.target.set(0, 0.75, 0);
     controls.update();
   }
 

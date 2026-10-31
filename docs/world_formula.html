@@ -1004,61 +1004,75 @@ footer b{color:var(--gold);font-weight:400}
       </div>
 
       <div class="geo-card">
-        <div class="card-head"><b>一日食 / 三光栅</b><span>1 → 3 → 6 + 1</span></div>
-        <svg viewBox="0 0 420 420" role="img" aria-label="天理点光源被日食遮挡，三面弧面光栅在阴影外接光，反射衍射到底色盘">
+        <div class="card-head"><b>三月反射 / 一日食</b><span>3 ← 1 → 3 × 6 + 1</span></div>
+                <svg viewBox="0 0 420 420" role="img" aria-label="三月在上方接收天理的上行光，再反射回底色盘；天理直射盘面的下行光被遮挡体挡住">
           <defs>
-            <linearGradient id="prismFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#dfe9ff" stop-opacity=".14"/>
-              <stop offset="1" stop-color="#6fe3ff" stop-opacity=".04"/>
+            <radialGradient id="sunHalo"><stop offset="0" stop-color="#fff4d6" stop-opacity=".9"/><stop offset=".45" stop-color="#ffd9a0" stop-opacity=".26"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
+            <linearGradient id="ringGrad2" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#35AACC"/>
+              <stop offset=".25" stop-color="#66AD16"/>
+              <stop offset=".45" stop-color="#CC9046"/>
+              <stop offset=".65" stop-color="#EC4923"/>
+              <stop offset=".82" stop-color="#359697"/>
+              <stop offset="1" stop-color="#498FCC"/>
             </linearGradient>
-            <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#5eead4"/>
-              <stop offset=".18" stop-color="#fbbf24"/>
-              <stop offset=".36" stop-color="#a5f3fc"/>
-              <stop offset=".54" stop-color="#86efac"/>
-              <stop offset=".72" stop-color="#60a5fa"/>
-              <stop offset=".88" stop-color="#fb923c"/>
-              <stop offset="1" stop-color="#c084fc"/>
-            </linearGradient>
-            <radialGradient id="sunHalo"><stop offset="0" stop-color="#fff4d6" stop-opacity=".85"/><stop offset=".45" stop-color="#ffd9a0" stop-opacity=".28"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
             <filter id="prismGlow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           </defs>
-          <g filter="url(#prismGlow)" opacity=".85">
-            <circle cx="210" cy="62" r="30" fill="url(#sunHalo)"/>
-            <circle cx="210" cy="62" r="5" fill="#fff4d6"/>
-            <circle cx="210" cy="150" r="17" fill="#05060a" stroke="#ffd6a0" stroke-width="1.6"/>
-            <circle cx="210" cy="150" r="23" fill="none" stroke="#ffd6a0" stroke-width=".7" stroke-opacity=".3"/>
-            <path d="M205 62 L152 232" stroke="#ffd9a0" stroke-width="1.6" fill="none" opacity=".45"/>
-            <path d="M215 62 L268 232" stroke="#ffd9a0" stroke-width="1.6" fill="none" opacity=".45"/>
-            <path d="M210 62 L210 228" stroke="#ffd9a0" stroke-width="1.4" fill="none" opacity=".3"/>
+
+          <!-- 三月：最上方，弧面光栅 -->
+          <g opacity=".96">
+            <circle cx="150" cy="92" r="15" fill="#070c14" stroke="rgba(190,214,246,.35)" stroke-width="1"/>
+            <circle cx="210" cy="70" r="15" fill="#070c14" stroke="rgba(190,214,246,.35)" stroke-width="1"/>
+            <circle cx="270" cy="92" r="15" fill="#070c14" stroke="rgba(190,214,246,.35)" stroke-width="1"/>
+            <g fill="none" stroke="#dfeeff" stroke-width="2.2" stroke-linecap="round">
+              <path d="M140 99 A 15 15 0 0 0 161 96"/>
+              <path d="M200 77 A 15 15 0 0 0 221 74"/>
+              <path d="M260 99 A 15 15 0 0 0 281 96"/>
+            </g>
           </g>
-          <g fill="none" stroke="#dfeeff" stroke-width="2.6" stroke-linecap="round" opacity=".9">
-            <path d="M138 246 A 24 24 0 0 1 172 228"/>
-            <path d="M248 228 A 24 24 0 0 1 282 246"/>
-            <path d="M196 224 A 20 20 0 0 1 224 224"/>
+
+          <!-- 天理：中间的点光源 -->
+          <circle cx="210" cy="176" r="30" fill="url(#sunHalo)"/>
+          <circle cx="210" cy="176" r="5.5" fill="#fff4d6" filter="url(#prismGlow)"/>
+
+          <!-- 上行光：天理 → 三月 -->
+          <g stroke="#ffd9a0" stroke-opacity=".5" stroke-width="1.4" fill="none">
+            <path d="M206 171 L152 104"/>
+            <path d="M210 170 L210 84"/>
+            <path d="M214 171 L268 104"/>
           </g>
-          <g opacity=".72">
-            <ellipse cx="210" cy="178" rx="112" ry="30" fill="none" stroke="url(#rainbow)" stroke-width="4" transform="rotate(-6 210 178)"/>
-            <ellipse cx="210" cy="164" rx="96" ry="26" fill="none" stroke="url(#rainbow)" stroke-width="3" transform="rotate(5 210 164)"/>
-            <ellipse cx="210" cy="192" rx="128" ry="34" fill="none" stroke="url(#rainbow)" stroke-width="2.4" transform="rotate(10 210 192)"/>
+
+          <!-- 遮挡体：挡住天理直射盘面的下行光 -->
+          <circle cx="210" cy="226" r="12" fill="#05060a" stroke="#ffd6a0" stroke-width="1.5"/>
+          <circle cx="210" cy="226" r="17" fill="none" stroke="#ffd6a0" stroke-width=".7" stroke-opacity=".28"/>
+          <path d="M210 238 L210 300" stroke="#f4e4b7" stroke-opacity=".30" stroke-width="1" stroke-dasharray="2 6" fill="none"/>
+
+          <!-- 下行反射光：三月 → 三环 -->
+          <g stroke="#bfd8ff" stroke-opacity=".30" stroke-width="1.2" fill="none">
+            <path d="M150 107 L120 300"/>
+            <path d="M210 85 L210 296"/>
+            <path d="M270 107 L300 300"/>
           </g>
-          <g opacity=".18">
-            <ellipse cx="210" cy="178" rx="112" ry="30" fill="none" stroke="#fff" stroke-width="10" transform="rotate(-6 210 178)"/>
-          </g>
-          <path d="M203 66 L193 168" stroke="#f4e4b7" stroke-opacity=".35" stroke-width="1" fill="none"/>
-          <path d="M210 168 L210 300" stroke="#f4e4b7" stroke-opacity=".30" stroke-width="1" stroke-dasharray="2 6" fill="none"/>
-          <ellipse cx="210" cy="306" rx="17" ry="6" fill="#000" opacity=".62"/>
-          <circle cx="286" cy="296" r="4" fill="#7B66E2" opacity=".9"/>
-          <text x="210" y="36" text-anchor="middle" fill="#f4e4b7" font-family="Cascadia Code, monospace" font-size="7">1 POINT LIGHT · ECLIPSED</text>
-          <text x="210" y="386" text-anchor="middle" fill="#8f8d87" font-family="Cascadia Code, monospace" font-size="7">3 ARC GRATINGS → 6 FIXED + 1 BLAZE</text>
+
+          <!-- 底色盘与三环 -->
+          <ellipse cx="210" cy="318" rx="132" ry="38" fill="rgba(9,16,29,.78)" stroke="rgba(170,196,224,.18)"/>
+          <ellipse cx="210" cy="318" rx="132" ry="38" fill="none" stroke="url(#ringGrad2)" stroke-width="2.6" opacity=".5"/>
+          <ellipse cx="210" cy="318" rx="86" ry="25" fill="none" stroke="url(#ringGrad2)" stroke-width="2.4" opacity=".75"/>
+          <ellipse cx="210" cy="318" rx="66" ry="19" fill="none" stroke="url(#ringGrad2)" stroke-width="2.2" opacity=".6"/>
+          <ellipse cx="210" cy="318" rx="12" ry="4" fill="#000" opacity=".7"/>
+          <circle cx="292" cy="330" r="3.5" fill="#7B66E2" opacity=".9"/>
+
+          <text x="210" y="40" text-anchor="middle" fill="#f4e4b7" font-family="Cascadia Code, monospace" font-size="7">3 MOONS · ARC GRATINGS</text>
+          <text x="210" y="252" text-anchor="middle" fill="#8f8d87" font-family="Cascadia Code, monospace" font-size="7">1 SUN · DIRECT LIGHT BLOCKED BELOW</text>
+          <text x="210" y="386" text-anchor="middle" fill="#8f8d87" font-family="Cascadia Code, monospace" font-size="7">3 RINGS → 6 FIXED + 1 BLAZE</text>
         </svg>
-        <p>天理是一盏<b>被日食遮挡的点光源</b>，直射光到不了盘心；三面<b>弧面光栅</b>在阴影外接光，把七色反射衍射到底色盘。所以中心留空——显形的七个点里，六个是固定交点，第七个是窗口扫过时才亮起的雷色。</p>
+        <p>三月在<b>最上方</b>，天理是中间那盏点光源：三面<b>弧面光栅</b>接收上行光，再把光反射回底色盘；天理直射盘面的下行光被<b>日食遮挡体</b>挡住。所以盘面只吃到经三月中介的光，中心也留空——显形的七个点里，六个是固定交点，第七个是窗口扫过时才亮起的雷色。</p>
       </div>
 
       <div class="geo-card geo-text">
         <div class="card-head"><b>实现选择</b><span>HTML / Canvas / Three.js</span></div>
         <h3>结构图用纯 HTML 就够；真实折射才需要 WebGL。</h3>
-        <p>主图继续用<b>纯 canvas/HTML</b>：可交互、单文件、离线，旋转和节点选择都不依赖外部库。日食与光栅用风格化 SVG 画"光路示意"，不冒充真实光学。</p>
+        <p>主图继续用<b>纯 canvas/HTML</b>：可交互、单文件、离线，旋转和节点选择都不依赖外部库。三月反射与日食遮挡用风格化 SVG 画"光路示意"，不冒充真实光学。</p>
         <p>Three.js 本身不负责“分光”；它只是渲染器。要真实色散，需要<b>光谱 + 衍射 shader</b>，甚至光线追迹。对一张结构图来说，成本和可读性都不划算。</p>
         <p>如果你要一个能真实旋转、可调光栅角度的光栅实验，可以打开单独的 <b>Three.js / WebGL</b> 页面；但不建议把它塞进当前这个“世界式结构图”里。</p>
         <a class="lab-link" href="prism_three_planb.html">打开 Three.js 光栅实验 <span>→</span></a>
