@@ -322,8 +322,8 @@
 
   <div class="source-head">SPECTRUM / 色带模型</div>
   <div class="row">
-    <button class="btn" id="bandPhys" type="button" aria-pressed="false" title="严格物理：每条环只显示 46.7° 的真实衍射光谱弧，颜色 = 波长">物理色带</button>
-    <button class="btn active" id="bandSymbolic" type="button" aria-pressed="true" title="象征分区：七元素色按角度分段，便于读图">象征分区</button>
+    <button class="btn active" id="bandPhys" type="button" aria-pressed="true" title="严格物理：每条环只显示 46.7° 的真实衍射光谱弧，颜色 = 波长">物理色带</button>
+    <button class="btn" id="bandSymbolic" type="button" aria-pressed="false" title="象征分区：七元素色按角度分段，便于读图">象征分区</button>
   </div>
 
   <div class="source-head">PALETTE / 元素配色</div>
@@ -4294,7 +4294,7 @@ window.M3 = {
     showLabels: true,
     showGrooves: true,
     showEclipse: true,
-    bandMode: new URLSearchParams(location.search).has('phys') ? 'phys' : 'symbolic',
+    bandMode: new URLSearchParams(location.search).has('sym') ? 'symbolic' : 'phys',
     brightness: { A: 0.55, B: 0.68, C: 1.15 },
   };
   const palette = () => PALETTES[state.theme];
@@ -4834,8 +4834,8 @@ window.M3 = {
   // 弧形状固定，随光栅转角整体旋转。
   function buildPhysArc(ring, seed) {
     const segs = 120;
-    const inner = RING_R - 0.17;
-    const outer = RING_R + 0.17;
+    const inner = RING_R - 0.21;
+    const outer = RING_R + 0.21;
     const pos = [];
     const col = [];
     const idx = [];
@@ -4844,7 +4844,7 @@ window.M3 = {
       const beta = BETA_MID + rel;
       const lamNm = GRATING_D * (Math.sin(GRATING_ALPHA) + Math.sin(beta)) * 1e9;
       const c = wavelengthToRgb(lamNm);
-      const bright = 0.75 + 0.55 * Math.exp(-Math.pow(rel / 0.07, 2));
+      const bright = 1.25 + 1.05 * Math.exp(-Math.pow(rel / 0.07, 2));
       for (const r of [inner, outer]) {
         pos.push(Math.cos(rel) * r, Math.sin(rel) * r, 0);
         col.push(c.r * bright, c.g * bright, c.b * bright);
@@ -4883,9 +4883,9 @@ window.M3 = {
         // 基础设定：三环本身是完整的圆，这里画成暗环；
         // 只有被光栅照到的那 46.7° 是彩色光谱弧。
         const base = new M.Mesh(
-          new M.RingGeometry(RING_R - 0.012, RING_R + 0.012, 256, 1),
+          new M.RingGeometry(RING_R - 0.016, RING_R + 0.016, 256, 1),
           new M.MeshBasicMaterial({
-            color: 0x2b3a56, transparent: true, opacity: 0.5,
+            color: 0x41577d, transparent: true, opacity: 0.8,
             side: M.DoubleSide, blending: M.AdditiveBlending, depthWrite: false, toneMapped: false,
           })
         );
@@ -5207,7 +5207,7 @@ window.M3 = {
       view.marker.scale.setScalar(1 + mask * 1.1);
 
       view.column.material.color.copy(thunderColor);
-      view.column.material.opacity = mask * 0.5;
+      view.column.material.opacity = mask * (state.bandMode === 'phys' ? 0.34 : 0.5);
       view.column.scale.set(1 + mask * 0.5, 0.45 + mask * 0.9, 1 + mask * 0.5);
 
       view.halo.material.opacity = mask * 0.72;
