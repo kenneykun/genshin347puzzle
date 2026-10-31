@@ -4789,7 +4789,7 @@ window.M3 = {
     new M.MeshPhysicalMaterial({
       color: 0x0b1322, metalness: 0.55, roughness: 0.28, emissive: 0x140c2a, emissiveIntensity: 0.45,
       envMapIntensity: 0.55, clearcoat: 0.4, clearcoatRoughness: 0.3,
-      transparent: true, opacity: 0.72,
+      transparent: true, opacity: 0.9,
     })
   );
   plate.position.y = PLANE_Y - 0.06;
@@ -4806,108 +4806,75 @@ window.M3 = {
   plateRim.position.y = PLANE_Y + 0.002;
   scene.add(plateRim);
 
-  /* 雷电盘：从中央（雷座）向六个焦点放射的电弧，画在画布上再叠到盘面 */
-  const boltCanvas = document.createElement('canvas');
-  boltCanvas.width = 640;
-  boltCanvas.height = 640;
-  const boltCtx = boltCanvas.getContext('2d');
-  const boltTex = new M.CanvasTexture(boltCanvas);
-  boltTex.colorSpace = M.SRGBColorSpace;
+  /* 盘面电丝：GLSL 脊状噪声，连续、始终在动，不依赖生命周期 */
+  const boltUniforms = { uTime: { value: 0 } };
   const boltPlate = new M.Mesh(
     new M.RingGeometry(0.001, 3.32, 96),
-    new M.MeshBasicMaterial({
-      map: boltTex, transparent: true, blending: M.AdditiveBlending,
-      depthWrite: false, side: M.DoubleSide, toneMapped: false,
+    new M.ShaderMaterial({
+      uniforms: boltUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: M.AdditiveBlending,
+      side: M.DoubleSide,
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        varying vec2 vUv;
+        float hash(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+        }
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+        }
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          for (int i = 0; i < 5; i++) {
+            v += a * noise(p);
+            p *= 2.03;
+            a *= 0.5;
+          }
+          return v;
+        }
+        void main() {
+          vec2 p = vUv * 2.0 - 1.0;
+          float r = length(p);
+          if (r > 1.0) discard;
+          float t = uTime * 0.22;
+          // 脊状噪声 → 细电丝
+          float n1 = fbm(p * 3.1 + vec2(t, -t * 0.7));
+          float fil = 1.0 - smoothstep(0.0, 0.10, abs(n1 - 0.5));
+          // 更细的高频碎丝
+          float n2 = fbm(p * 7.4 - vec2(t * 1.7, t * 0.8));
+          float micro = pow(max(0.0, 1.0 - abs(n2 - 0.5) * 3.0), 5.0);
+          // 偶发的亮弧：低频噪声过阈值才闪
+          float n3 = fbm(p * 1.7 + vec2(-t * 0.5, t * 0.4));
+          float surge = smoothstep(0.72, 0.86, n3) * (0.5 + 0.5 * sin(uTime * 5.0 + n3 * 30.0));
+          float glow = 0.16 + 1.05 * fil + 0.75 * micro + 0.55 * surge;
+          float edge = smoothstep(1.0, 0.82, r);
+          vec3 col = mix(vec3(0.42, 0.30, 1.00), vec3(0.94, 0.90, 1.0), clamp(fil + micro, 0.0, 1.0));
+          gl_FragColor = vec4(col * glow * edge, 1.0);
+        }
+      `,
     })
   );
   boltPlate.rotation.x = -Math.PI / 2;
-  boltPlate.position.y = PLANE_Y - 0.012;   // 沉进盘体内部，隔着盘面透出来
-  boltPlate.renderOrder = -3;   // 环和座位都画在它上面，电感从盘底透出来
+  boltPlate.position.y = PLANE_Y + 0.003;
+  boltPlate.renderOrder = -3;
   scene.add(boltPlate);
-
-  let boltClock = -1;
-
-  const hash01 = (n) => {
-    const x = Math.sin(n * 12.9898) * 43758.5453;
-    return x - Math.floor(x);
-  };
-
-  // 全局静电：盘面上随机的短促电弧 + 一层电雾，没有中心、没有放射方向
-  function drawStatic(time) {
-    const g = boltCtx;
-    const W = boltCanvas.width;
-    const cxp = W / 2;
-    const cyp = W / 2;
-    const rp = (W / 2) * 0.99;
-    g.clearRect(0, 0, W, W);
-    g.lineCap = 'round';
-    g.lineJoin = 'round';
-
-    // 整体带电的薄雾
-    const wash = g.createRadialGradient(cxp, cyp, rp * 0.12, cxp, cyp, rp);
-    wash.addColorStop(0, 'rgba(112,92,196,0.16)');
-    wash.addColorStop(0.55, 'rgba(96,80,180,0.10)');
-    wash.addColorStop(1, 'rgba(70,56,140,0.02)');
-    g.fillStyle = wash;
-    g.beginPath();
-    g.arc(cxp, cyp, rp, 0, Math.PI * 2);
-    g.fill();
-
-    const slot = Math.floor(time * 9);          // 电弧按 9fps 换位，保留一点粘滞感
-    const ARC_N = 16;
-    for (let i = 0; i < ARC_N; i++) {
-      const s = slot + i * 17.31;
-      const ang = hash01(s * 1.13) * Math.PI * 2;
-      const rr = Math.sqrt(hash01(s * 2.71)) * rp * 0.94;
-      const cx0 = cxp + Math.cos(ang) * rr;
-      const cy0 = cyp + Math.sin(ang) * rr;
-      const len = 16 + hash01(s * 3.37) * 74;
-      const dir = hash01(s * 5.91) * Math.PI * 2;
-      const life = hash01(s * 0.73);
-      const flick = 0.25 + 0.75 * Math.abs(Math.sin(time * 9 + i * 2.1));
-      const alpha = (0.18 + 0.5 * life) * flick;
-      const steps = 4 + Math.floor(hash01(s * 7.7) * 3);
-
-      g.beginPath();
-      g.moveTo(cx0, cy0);
-      let px = cx0;
-      let py = cy0;
-      for (let k = 1; k <= steps; k++) {
-        const u = k / steps;
-        const wob = (hash01(s + k * 4.1) - 0.5) * 26;
-        const nx = Math.cos(dir) * len * u - Math.sin(dir) * wob;
-        const ny = Math.sin(dir) * len * u + Math.cos(dir) * wob;
-        px = cx0 + nx;
-        py = cy0 + ny;
-        g.lineTo(px, py);
-      }
-      g.strokeStyle = `rgba(146,120,240,${alpha * 0.55})`;
-      g.lineWidth = 5.2;
-      g.shadowColor = 'rgba(130,104,255,.9)';
-      g.shadowBlur = 20;
-      g.stroke();
-      g.strokeStyle = `rgba(206,188,255,${alpha})`;
-      g.lineWidth = 2.0;
-      g.shadowBlur = 8;
-      g.stroke();
-      g.strokeStyle = `rgba(246,242,255,${alpha * 0.9})`;
-      g.lineWidth = 0.9;
-      g.shadowBlur = 3;
-      g.stroke();
-
-      // 弧端的一点火星
-      if (life > 0.62) {
-        const spark = g.createRadialGradient(px, py, 0, px, py, 9 + 7 * life);
-        spark.addColorStop(0, `rgba(232,222,255,${alpha * 0.9})`);
-        spark.addColorStop(1, 'rgba(150,124,240,0)');
-        g.fillStyle = spark;
-        g.beginPath();
-        g.arc(px, py, 9 + 7 * life, 0, Math.PI * 2);
-        g.fill();
-      }
-    }
-    boltTex.needsUpdate = true;
-  }
   /* 带电荷的粒子：在盘面上方缓慢漂浮，忽明忽暗 */
   const moteGroup = new M.Group();
   scene.add(moteGroup);
@@ -5791,10 +5758,7 @@ window.M3 = {
     dustNear.rotation.y -= dt * 0.006;
     sunHalo.scale.setScalar(0.95 + Math.sin(clock.elapsedTime * 1.4) * 0.04);
 
-    if (clock.elapsedTime - boltClock > 0.06) {
-      boltClock = clock.elapsedTime;
-      drawStatic(clock.elapsedTime);
-    }
+    boltUniforms.uTime.value = clock.elapsedTime;
 
     const et = clock.elapsedTime;
     for (let i = 0; i < motes.length; i++) {
