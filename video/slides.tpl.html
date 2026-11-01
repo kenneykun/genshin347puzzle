@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>三月 · 三域 —— 抖音版式页</title>
+<style>
+  :root{
+    --bg:#05070c; --ink:#eef2f7; --soft:#aab3c4; --muted:#79839a;
+    --gold:#e8c97a; --gold-soft:#f4e4b7;
+    --sun:#EC4923; --moon:#498FCC; --star:#35AACC; --thunder:#6957C2;
+    --fire:#EC4923; --water:#498FCC; --anemo:#359697; --grass:#66AD16; --ice:#35AACC; --geo:#CC9046;
+    --sans:'Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
+    --mono:'Cascadia Code',Consolas,'Courier New',monospace;
+  }
+  html{width:2160px;height:3840px;overflow:hidden;background:var(--bg)}
+  body{margin:0;width:2160px;height:3840px;overflow:hidden;background:var(--bg)}
+  #stage{position:absolute;top:0;left:0;width:1080px;height:1920px;overflow:hidden;
+         background:var(--bg);transform:scale(2);transform-origin:0 0}
+  #stage.trans{background:transparent}
+
+  .layer{position:absolute;inset:0}
+  .bgblur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+          filter:blur(54px) brightness(.40) saturate(.85);transform:scale(1.18)}
+  .shade-top{position:absolute;left:0;right:0;top:0;height:520px;
+             background:linear-gradient(to bottom,rgba(5,7,12,.92),rgba(5,7,12,0))}
+  .shade-bot{position:absolute;left:0;right:0;bottom:0;height:760px;
+             background:linear-gradient(to top,rgba(5,7,12,.96) 12%,rgba(5,7,12,.72) 52%,rgba(5,7,12,0))}
+
+  .kicker{position:absolute;left:96px;top:236px;font-family:var(--mono);font-size:24px;
+          letter-spacing:.30em;color:var(--muted)}
+  .h1{position:absolute;left:96px;right:96px;top:290px;font-family:var(--sans);font-weight:900;
+      font-size:88px;line-height:1.08;letter-spacing:.02em;color:var(--ink)}
+  .sub-h{position:absolute;left:96px;top:404px;font-family:var(--sans);font-weight:500;
+         font-size:38px;letter-spacing:.10em;color:var(--soft)}
+
+  .shot{position:absolute;left:86px;width:908px;border-radius:10px;overflow:hidden;
+        border:1px solid rgba(150,190,255,.14);box-shadow:0 30px 90px rgba(0,0,0,.62)}
+  .shot img{display:block;width:100%;height:100%;object-fit:cover}
+
+  .sub{position:absolute;left:88px;right:88px;bottom:290px;text-align:center}
+  .sub .ln{font-family:var(--sans);font-weight:700;font-size:47px;line-height:1.34;color:#fff;
+           letter-spacing:.02em;
+           text-shadow:0 2px 6px rgba(0,0,0,.95),0 0 26px rgba(0,0,0,.85),0 0 60px rgba(0,0,0,.6)}
+  .sub .ln.gold{color:var(--gold-soft)}
+
+  .foot{position:absolute;right:96px;bottom:250px;font-family:var(--mono);font-size:22px;
+        letter-spacing:.22em;color:rgba(232,201,122,.72)}
+  .pill{display:inline-block;padding:10px 22px;border:1px solid rgba(232,201,122,.45);
+        border-radius:999px;font-family:var(--sans);font-size:26px;letter-spacing:.08em;color:var(--gold-soft);
+        background:rgba(5,7,12,.55)}
+  .fig{display:block}
+
+  /* 抖音式字幕：大字、粗描边、靠下居中 */
+  .cap{position:absolute;left:0;right:0;bottom:352px;display:flex;justify-content:center;padding:0 54px}
+  .capinner{max-width:900px;text-align:center;
+    font-family:var(--sans);font-weight:900;font-size:56px;line-height:1.34;color:#fff;
+    letter-spacing:.01em;word-break:break-word;
+    paint-order:stroke fill;
+    -webkit-text-stroke:9px rgba(0,0,0,.92); -webkit-text-fill-color:#fff;
+    text-shadow:0 4px 18px rgba(0,0,0,.8)}
+  .capinner .kw{-webkit-text-fill-color:var(--gold-soft);paint-order:stroke fill}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const CFG = __CFG__;
+const CAPS = __CAPS__;
+const W = 1080, H = 1920;
+const NOSUB = new URLSearchParams(location.search).has('nosub');
+
+/* ---------- 几何真值（与 repo/docs/prism_three_planb.html 一致） ---------- */
+const RHO = 6.0622;
+const DOMS = { sun: {name:'日', c:[0, 3.5],      color:'var(--sun)'  },
+               moon:{name:'月', c:[-3.03,-1.75],  color:'var(--moon)' },
+               star:{name:'星', c:[3.03,-1.75],   color:'var(--star)' } };
+const SEATS = [
+  ['火','--fire', 0, 3.5], ['风','--anemo', 6.0622, 3.5], ['冰','--ice', 3.03, -1.75],
+  ['岩','--geo', 0, -7],  ['水','--water', -3.03, -1.75], ['草','--grass', -6.0622, 3.5]
+];
+
+/* 自绘元素符号（不套用官方素材，只借用可辨识的形态语言） */
+const EL_KEY = { 火:'fire', 风:'anemo', 冰:'ice', 岩:'geo', 水:'water', 草:'grass', 雷:'thunder' };
+const EL_ART = {
+  fire: 'assets/el/fire.png', water: 'assets/el/water.png', thunder: 'assets/el/thunder.png',
+  ice: 'assets/el/ice.png', anemo: 'assets/el/anemo.png', geo: 'assets/el/geo.png',
+  grass: 'assets/el/grass.png'
+};
+function elGlyph(key, x, y, size, color){
+  return `<image href="${EL_ART[key]}" x="${x.toFixed(2)}" y="${y.toFixed(2)}"
+    width="${size.toFixed(2)}" height="${size.toFixed(2)}"
+    preserveAspectRatio="xMidYMid meet"/>`;
+}
+
+function elIconHTML(key, px, color){
+  return `<img src="${EL_ART[key]}" width="${px}" height="${px}"
+    style="display:block;object-fit:contain" alt="">`;
+}
+
+function mapper(box, s, ox, oy){
+  const cx = box.w/2, cy = box.h/2;
+  return { s,
+    X: x => cx + (x - ox) * s,
+    Y: y => cy - (y - oy) * s };
+}
+function pts2path(pts, close){
+  if(!pts.length) return '';
+  let d = 'M' + pts.map(p => p.map(n => n.toFixed(2)).join(' ')).join('L');
+  return close ? d + 'Z' : d;
+}
+function arcThrough(c, r, pA, pB, q, n){
+  n = n || 48;
+  const a1 = Math.atan2(pA[1] - c[1], pA[0] - c[0]);
+  const a2 = Math.atan2(pB[1] - c[1], pB[0] - c[0]);
+  const aq = Math.atan2(q[1] - c[1], q[0] - c[0]);
+  const norm = a => { while(a < 0) a += Math.PI * 2; while(a >= Math.PI * 2) a -= Math.PI * 2; return a; };
+  const dccw = norm(a2 - a1);
+  const qRel = norm(aq - a1);
+  const span = (qRel <= dccw) ? dccw : dccw - Math.PI * 2;
+  const out = [];
+  for(let i = 0; i <= n; i++){
+    const a = a1 + span * i / n;
+    out.push([c[0] + Math.cos(a) * r, c[1] + Math.sin(a) * r]);
+  }
+  return out;
+}
+
+function ringsFigure(m, opt){
+  opt = opt || {};
+  const sw = Math.max(2, m.s*0.075);
+  let s = '';
+  for(const k of ['sun','moon','star']){
+    const d = DOMS[k];
+    s += `<circle cx="${m.X(d.c[0])}" cy="${m.Y(d.c[1])}" r="${RHO*m.s}" fill="none"
+      stroke="${d.color}" stroke-opacity="${opt.op || .55}" stroke-width="${sw}"/>`;
+  }
+  if(opt.glow !== false){
+    for(const k of ['sun','moon','star']){
+      const d = DOMS[k];
+      s += `<circle cx="${m.X(d.c[0])}" cy="${m.Y(d.c[1])}" r="${RHO*m.s}" fill="none"
+        stroke="${d.color}" stroke-opacity="${(opt.op||.55)*0.35}" stroke-width="${sw*3.2}"/>`;
+    }
+  }
+  for(const k of ['sun','moon','star']){
+    const d = DOMS[k];
+    s += `<circle cx="${m.X(d.c[0])}" cy="${m.Y(d.c[1])}" r="${m.s*0.11}" fill="${d.color}" fill-opacity=".82"/>`;
+  }
+  if(opt.ringLabels){
+    const lab = [['日','sun',[0,3.5],[-1,-1]],['月','moon',[-3.03,-1.75],[-1,1]],['星','star',[3.03,-1.75],[1,1]]];
+    for(const [t,k,c,d] of lab){
+      s += `<text x="${m.X(c[0]) + d[0]*m.s*0.9}" y="${m.Y(c[1]) + d[1]*m.s*0.35 + 6}"
+        fill="${DOMS[k].color}" fill-opacity=".85" font-family="var(--sans)" font-size="${m.s*0.40}"
+        font-weight="600" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.9)" stroke-width="${m.s*0.14}">${t}</text>`;
+    }
+  }
+  return s;
+}
+
+function seatsFigure(m, opt){
+  opt = opt || {};
+  const on = opt.on || null;
+  let s = '';
+  for(const [name, cssVar, x, y] of SEATS){
+    const lit = !on || on.indexOf(name) >= 0;
+    const col = `var(${cssVar})`;
+    const iconSize = m.s * 0.82;
+    s += `<g opacity="${lit ? 1 : .26}">
+      ${elGlyph(EL_KEY[name], m.X(x) - iconSize/2, m.Y(y) - iconSize/2, iconSize, col)}
+      <circle cx="${m.X(x)}" cy="${m.Y(y)}" r="${m.s*0.40}" fill="none" stroke="${col}"
+        stroke-opacity=".38" stroke-width="${Math.max(1.5, m.s*0.040)}"/>
+      <text x="${m.X(x)}" y="${m.Y(y) - m.s*0.42}" fill="${col}" font-family="var(--sans)"
+        font-size="${m.s*0.44}" font-weight="700" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.92)" stroke-width="${m.s*0.16}">${name}</text>
+    </g>`;
+  }
+  return s;
+}
+
+function lensPath(m, a, b){
+  const A = DOMS[a].c, B = DOMS[b].c;
+  const d = Math.hypot(B[0]-A[0], B[1]-A[1]);
+  const h = Math.sqrt(Math.max(0, RHO*RHO - (d/2)*(d/2)));
+  const mx = (A[0]+B[0])/2, my = (A[1]+B[1])/2;
+  const ux = (B[0]-A[0])/d, uy = (B[1]-A[1])/d;
+  const p1 = [mx - uy*h, my + ux*h], p2 = [mx + uy*h, my - ux*h];
+  const qA = [A[0] + ux*RHO*0.999, A[1] + uy*RHO*0.999];
+  const qB = [B[0] - ux*RHO*0.999, B[1] - uy*RHO*0.999];
+  const arcA = arcThrough(A, RHO, p1, p2, qA, 40);
+  const arcB = arcThrough(B, RHO, p2, p1, qB, 40);
+  const pts = arcA.concat(arcB).map(p => [m.X(p[0]), m.Y(p[1])]);
+  return pts2path(pts, true);
+}
+function triplePath(m){
+  const S = DOMS.sun.c, Mo = DOMS.moon.c, St = DOMS.star.c;
+  const a1 = arcThrough(S,  RHO, Mo, St, [0, -1], 24);
+  const a2 = arcThrough(Mo, RHO, St, S,  [Math.cos(Math.PI/6), Math.sin(Math.PI/6)], 24);
+  const a3 = arcThrough(St, RHO, S,  Mo, [Math.cos(5*Math.PI/6), Math.sin(5*Math.PI/6)], 24);
+  const world = a1.concat(a2).concat(a3);
+  return 'M' + world.map(p => `${m.X(p[0]).toFixed(2)} ${m.Y(p[1]).toFixed(2)}`).join('L') + 'Z';
+}
+function shadowMapping(m){
+  // 三个圆心座位（火 / 水 / 冰）= 日 / 月 / 星 的主元素；外圈草 / 风 / 岩 正对 生 / 空 / 时；中央雷 ↔ 死
+  const INNER = [['火', '--fire', 0, 3.5, '日', '--sun'],
+                 ['冰', '--ice', 3.03, -1.75, '星', '--star'],
+                 ['水', '--water', -3.03, -1.75, '月', '--moon']];
+  const OUTER = [['草', '--grass', -6.0622, 3.5, '生', '--sun'],
+                 ['风', '--anemo', 6.0622, 3.5, '空', '--star'],
+                 ['岩', '--geo', 0, -7, '时', '--moon']];
+  let s = ringsFigure(m, {op: .30, glow: false});
+  s += `<path d="${lensPath(m, 'sun', 'moon')}" fill="var(--sun)" fill-opacity=".16"/>
+        <path d="${lensPath(m, 'sun', 'star')}" fill="var(--star)" fill-opacity=".16"/>
+        <path d="${lensPath(m, 'moon', 'star')}" fill="var(--moon)" fill-opacity=".16"/>
+        <path d="${triplePath(m)}" fill="var(--gold)" fill-opacity=".18"
+          stroke="var(--gold)" stroke-opacity=".55" stroke-width="${Math.max(1.5, m.s*0.03)}"/>`;
+  // 主元素：金色外环 + 日/月/星
+  for (const [name, cssVar, x, y, dom, domVar] of INNER) {
+    const cx = m.X(x), cy = m.Y(y);
+    s += `<circle cx="${cx}" cy="${cy}" r="${m.s*0.86}" fill="none" stroke="var(--gold)"
+        stroke-opacity=".85" stroke-width="${Math.max(2, m.s*0.055)}"/>
+      ${elGlyph(EL_KEY[name], cx - m.s*0.34, cy - m.s*0.34, m.s*0.68, `var(${cssVar})`)}
+      <text x="${cx}" y="${cy + m.s*0.72}" fill="var(${domVar})" font-family="var(--sans)"
+        font-size="${m.s*0.42}" font-weight="700" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.9)" stroke-width="${m.s*0.13}">${dom}</text>
+      <text x="${cx}" y="${cy - m.s*0.62}" fill="var(--gold-soft)" font-family="var(--sans)"
+        font-size="${m.s*0.36}" font-weight="700" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.9)" stroke-width="${m.s*0.12}">${name}</text>`;
+  }
+  // 外圈：元素 + 对应的影
+  for (const [name, cssVar, x, y, shade, shadeVar] of OUTER) {
+    const cx = m.X(x), cy = m.Y(y);
+    const ox = Math.abs(x) > 1 ? Math.sign(x) * m.s * 0.52 : 0;
+    s += `${elGlyph(EL_KEY[name], cx - m.s*0.30, cy - m.s*0.30, m.s*0.60, `var(${cssVar})`)}
+      <text x="${cx}" y="${cy - m.s*0.58}" fill="var(${cssVar})" font-family="var(--sans)"
+        font-size="${m.s*0.40}" font-weight="700" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.9)" stroke-width="${m.s*0.13}">${name}</text>
+      <text x="${cx + ox}" y="${cy + m.s*0.92}" fill="var(${shadeVar})" font-family="var(--sans)"
+        font-size="${m.s*0.46}" font-weight="800" text-anchor="middle"
+        paint-order="stroke" stroke="rgba(5,7,12,.9)" stroke-width="${m.s*0.14}">${shade}</text>`;
+  }
+  // 中央：雷 ↔ 死
+  const mx = m.X(0), my = m.Y(0);
+  s += `<circle cx="${mx}" cy="${my}" r="${m.s*1.02}" fill="rgba(5,7,12,.72)"
+      stroke="var(--thunder)" stroke-opacity=".75" stroke-width="${Math.max(2, m.s*0.05)}"/>
+    ${elGlyph('thunder', mx - m.s*0.36, my - m.s*0.44, m.s*0.72, 'var(--thunder)')}
+    <text x="${mx}" y="${my + m.s*0.52}" fill="var(--gold-soft)" font-family="var(--sans)"
+      font-size="${m.s*0.40}" font-weight="800" text-anchor="middle">雷 = 死</text>`;
+  return s;
+}
+
+function shadowsFigure(m, opt){
+  opt = opt || {};
+  let s = ringsFigure(m, {op:.34, glow:false});
+  const pairs = [['sun','moon','生','--sun'],['sun','star','空','--star'],['moon','star','时','--moon']];
+  for(const [a,b,label,cssVar] of pairs){
+    const lit = opt.lit && opt.lit.indexOf(label) >= 0;
+    const d = lensPath(m, a, b);
+    s += `<path d="${d}" fill="var(${cssVar})" fill-opacity="${lit ? .30 : .07}"
+      stroke="var(${cssVar})" stroke-opacity="${lit ? .70 : .18}" stroke-width="${Math.max(1.5, m.s*0.03)}"/>`;
+  }
+  const dl = triplePath(m);
+  const coreLit = opt.lit && opt.lit.indexOf('死') >= 0;
+  s += `<path d="${dl}" fill="var(--gold)" fill-opacity="${coreLit ? .24 : .06}"
+    stroke="var(--gold)" stroke-opacity="${coreLit ? .80 : .22}" stroke-width="${Math.max(1.5, m.s*0.03)}"/>`;
+  const labels = [['生',[-3.95,2.35],'--sun'],['空',[3.95,2.35],'--star'],['时',[0,-5.15],'--moon'],['死',[0,0.55],'--gold']];
+  for(const [t,c,cssVar] of labels){
+    const lit = !opt.lit || opt.lit.indexOf(t) >= 0;
+    const isCore = t === '死';
+    s += `<g opacity="${lit ? 1 : .20}">
+      <circle cx="${m.X(c[0])}" cy="${m.Y(c[1])}" r="${m.s*0.46}" fill="rgba(5,7,12,.82)"
+        stroke="var(${cssVar})" stroke-opacity=".55" stroke-width="${Math.max(1.2, m.s*0.028)}"/>
+      <text x="${m.X(c[0])}" y="${m.Y(c[1]) + m.s*0.17}" fill="var(${cssVar})"
+        font-family="var(--sans)" font-size="${m.s*0.44}" font-weight="${isCore?800:600}"
+        text-anchor="middle">${t}</text></g>`;
+  }
+  return s;
+}
+
+/* ---------- 公共片段 ---------- */
+function subLayer(id, opts){
+  const shot = CFG.shots[id-1];
+  const lines = NOSUB ? '' : shot.subtitle.map((t,i) =>
+    `<div class="ln${(opts&&opts.gold&&i===0)?' gold':''}">${t}</div>`).join('');
+  return `<div class="shade-bot"></div><div class="sub">${lines}</div>`;
+}
+function shotImage(src, top, height, extra){
+  return `<div class="shot" style="top:${top}px;height:${height}px;${extra||''}"><img src="${src}"></div>`;
+}
+
+/* ---------- 页面 ---------- */
+const PAGES = {
+  s01a(){
+    const m = mapper({w:W,h:900}, 34, 0, 0.9);
+    return `<div class="layer" style="top:180px;opacity:.34">
+        <svg width="1080" height="900" viewBox="0 0 1080 900">${ringsFigure(m,{op:.55,glow:false,ringLabels:false})}</svg>
+      </div>
+      <div class="layer" style="top:1030px;text-align:center">
+        <div style="font-family:var(--mono);font-size:26px;letter-spacing:.42em;color:var(--muted)">SUN / MOON / STAR</div>
+        <div style="font-family:var(--sans);font-weight:900;font-size:178px;letter-spacing:.04em;
+             color:var(--gold-soft);opacity:.74;line-height:1.12;margin-top:12px;
+             text-shadow:0 0 90px rgba(232,201,122,.35)">3 · 4 · 7</div>
+      </div>${subLayer(1,{gold:true})}`;
+  },
+  s01b(){
+    const m = mapper({w:W,h:900}, 34, 0, 0.9);
+    return `<div class="layer" style="top:180px">
+        <svg width="1080" height="900" viewBox="0 0 1080 900">${ringsFigure(m,{op:.62,ringLabels:false})}</svg>
+      </div>
+      <div class="layer" style="top:1030px;text-align:center">
+        <div style="font-family:var(--mono);font-size:26px;letter-spacing:.42em;color:var(--muted)">SUN / MOON / STAR</div>
+        <div style="font-family:var(--sans);font-weight:900;font-size:178px;letter-spacing:.04em;
+             color:var(--gold-soft);line-height:1.12;margin-top:12px;
+             text-shadow:0 0 90px rgba(232,201,122,.45)">3 · 4 · 7</div>
+      </div>${subLayer(1,{gold:true})}`;
+  },
+
+  s02(){
+    return `<img class="bgblur" src="assets/a1c.png">
+      <div class="shade-top"></div>
+      <div class="kicker">SUN / MOON / STAR · 3 CIRCLES</div>
+      <div class="h1">三个圆</div>
+      <div class="sub-h">日 · 月 · 星　三域</div>
+      ${shotImage('assets/a1c.png', 500, 908)}
+      ${subLayer(2)}`;
+  },
+
+  s03a(){ return geomPage(false); },
+  s03b(){ return geomPage(true); },
+
+  s04a(){ return seatsPage(0); },
+  s04b(){ return seatsPage(1); },
+  s04c(){ return seatsPage(2); },
+  s04d(){ return seatsPage(3); },
+
+  s05a(){ return thunderPage('marker'); },
+  s05b(){ return thunderPage('cross'); },
+  s05c(){ return thunderPage('plate', 'assets/a3.png'); },
+  s05d(){ return thunderPage('plate', 'assets/a4.png'); },
+
+  s06a(){ return shadowPage([]); },
+  s06b(){ return shadowPage(['生']); },
+  s06c(){ return shadowPage(['生','空']); },
+  s06d(){ return shadowPage(['生','空','死']); },
+  s06e(){ return shadowPage(['生','空','死','时']); },
+
+  s07a(){ return calcPage(1); },
+  s07b(){ return calcPage(2); },
+  s07c(){ return calcPage(3); },
+  s07d(){ return calcPage(4); },
+
+  s08a(){
+    return `<img class="bgblur" src="assets/a5.png">
+      <div class="shade-top" style="height:520px"></div>
+      <div class="kicker">WORLD FORMULA · 14 NODES</div>
+      <div class="h1" style="font-size:72px">世界式</div>
+      <div style="position:absolute;left:97px;top:400px;width:885px;height:1180px;border-radius:12px;
+           overflow:hidden;border:1px solid rgba(150,190,255,.12);box-shadow:0 24px 70px rgba(0,0,0,.55)">
+        <img src="assets/a5.png" style="display:block;width:100%;height:100%;object-fit:cover">
+      </div>
+      ${subLayer(8)}`;
+  },
+
+  s09a(){
+    return `<img class="bgblur" src="assets/a1c.png">
+      <div class="shade-top"></div>
+      <div class="kicker">THE READING</div>
+      <div class="h1" style="font-size:76px">这是读法，不是设定</div>
+      ${shotImage('assets/a1c.png', 470, 908)}
+      <div style="position:absolute;right:112px;top:1286px"><span class="pill">非官方设定 · 个人读法</span></div>
+      ${subLayer(9)}`;
+  },
+  s09b(){
+    return `<img class="bgblur" src="assets/a6.png">
+      <img class="layer" src="assets/a6.png" style="object-fit:cover;width:100%;height:100%">
+      <div class="shade-top" style="height:420px"></div>
+      ${subLayer(9)}
+      <div class="foot">AI 配音 · kenneykun.github.io/genshin347puzzle</div>`;
+  },
+
+  cover(){
+    const m = mapper({w:W,h:1080}, 46, 0, 0.6);
+    const inner = SEATS.filter(s => Math.hypot(s[2], s[3]) < 5);
+    const outer = SEATS.filter(s => Math.hypot(s[2], s[3]) >= 5);
+    const poly = (arr, col, op) => `<polygon points="${arr.map(s => `${m.X(s[2])},${m.Y(s[3])}`).join(' ')}"
+      fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${Math.max(2, m.s*0.06)}"/>`;
+    return `<div class="layer" style="top:120px">
+        <svg width="1080" height="1080" viewBox="0 0 1080 1080">
+          ${ringsFigure(m,{op:.42,glow:false,ringLabels:false})}
+          <text x="${m.X(0)}" y="${m.Y(9.2)}" fill="#FF7A5C" font-family="var(--sans)" font-size="46"
+            font-weight="800" text-anchor="middle" paint-order="stroke" stroke="rgba(5,7,12,.85)" stroke-width="8">日</text>
+          <text x="${m.X(-8.4)}" y="${m.Y(-4.6)}" fill="#7FB8F0" font-family="var(--sans)" font-size="46"
+            font-weight="800" text-anchor="middle" paint-order="stroke" stroke="rgba(5,7,12,.85)" stroke-width="8">月</text>
+          <text x="${m.X(8.4)}" y="${m.Y(-4.6)}" fill="#77D3EC" font-family="var(--sans)" font-size="46"
+            font-weight="800" text-anchor="middle" paint-order="stroke" stroke="rgba(5,7,12,.85)" stroke-width="8">星</text>
+          ${poly(inner, 'var(--gold)', .55)}
+          ${poly(outer, 'var(--gold)', .85)}
+          ${seatsFigure(m,{})}
+          <circle cx="${m.X(0)}" cy="${m.Y(0)}" r="${m.s*0.34}" fill="rgba(5,7,12,.9)"
+            stroke="var(--thunder)" stroke-opacity=".55" stroke-dasharray="6 8" stroke-width="3"/>
+        </svg>
+      </div>
+      <div style="position:absolute;left:0;right:0;top:1208px;text-align:center">
+        <div style="font-family:var(--mono);font-size:26px;letter-spacing:.44em;color:var(--muted)">THREE · FOUR · SEVEN</div>
+        <div style="font-family:var(--sans);font-weight:900;font-size:196px;color:var(--gold-soft);
+             letter-spacing:.03em;line-height:1.06;margin-top:10px;
+             text-shadow:0 0 100px rgba(232,201,122,.40)">3 · 4 · 7</div>
+        <div style="font-family:var(--sans);font-weight:800;font-size:88px;color:#fff;margin-top:6px">= 14</div>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:250px;text-align:center">
+        <span class="pill">日 · 月 · 星　／　生 · 空 · 死 · 时</span>
+      </div>`;
+  }
+};
+
+/* ---------- 组合页 ---------- */
+function geomPage(withAux){
+  const box = {w:908, h:900};
+  const m = mapper(box, 49, 0, 0.85);
+  const A = DOMS.sun.c, B = DOMS.moon.c, C = DOMS.star.c;
+  let s = ringsFigure(m, {op:.62, ringLabels:true});
+  if(withAux){
+    s += `<g stroke="#FF5A4A" stroke-opacity=".90" stroke-width="3.2" stroke-dasharray="12 9" fill="none">
+      <line x1="${m.X(A[0])}" y1="${m.Y(A[1])}" x2="${m.X(B[0])}" y2="${m.Y(B[1])}"/>
+      <line x1="${m.X(B[0])}" y1="${m.Y(B[1])}" x2="${m.X(C[0])}" y2="${m.Y(C[1])}"/>
+      <line x1="${m.X(C[0])}" y1="${m.Y(C[1])}" x2="${m.X(A[0])}" y2="${m.Y(A[1])}"/>
+    </g>`;
+    const ay = A[1] + RHO;
+    s += `<g stroke="#FF8A7A" stroke-width="3.4">
+      <line x1="${m.X(A[0])}" y1="${m.Y(A[1])}" x2="${m.X(A[0])}" y2="${m.Y(ay)}"/>
+    </g>
+    <circle cx="${m.X(A[0])}" cy="${m.Y(ay)}" r="6" fill="#FF8A7A"/>
+    <text x="${m.X(A[0]) + 20}" y="${m.Y((A[1] + ay) / 2)}" fill="#FFB3A6"
+      font-family="var(--mono)" font-size="36">ρ</text>
+    <text x="${m.X((B[0] + C[0]) / 2)}" y="${m.Y((B[1] + C[1]) / 2) + 48}" fill="#FFB3A6"
+      font-family="var(--mono)" font-size="30" text-anchor="middle">边长 = ρ</text>`;
+  }
+  return `<div class="kicker">GEOMETRY · ρ = r√3</div>
+    <div class="h1" style="font-size:76px">圆心落在圆上</div>
+    <div style="position:absolute;left:86px;top:410px;width:908px;height:900px">
+      <svg class="fig" width="908" height="900" viewBox="0 0 908 900">${s}</svg>
+    </div>
+    <div style="position:absolute;left:96px;top:1330px;font-family:var(--sans);font-size:32px;color:var(--soft)">
+      ${withAux ? '三条圆心线连成正三角形，边长正好等于圆半径：ρ = r√3'
+                : '三个圆心，连成一个正三角形'}
+    </div>
+    ${subLayer(3)}`;
+}
+
+function seatsPage(step){
+  const reveal = [ [], ['火'], ['火','风','冰'], ['火','风','冰','岩','水','草'] ][step];
+  const box = {w:908, h:620};
+  const m = mapper(box, 50, 0, -1.7);
+  const chips = SEATS.map(([name, cssVar]) => {
+    const lit = reveal.length ? reveal.indexOf(name) >= 0 : false;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;
+      border:1px solid ${lit ? `var(${cssVar})` : 'rgba(150,170,200,.20)'};
+      background:rgba(5,7,12,${lit ? .72 : .35});opacity:${lit ? 1 : .34}">
+      <span style="opacity:${lit?1:.5};display:flex">${elIconHTML(EL_KEY[name], 26, `var(${cssVar})`)}</span>
+      <span style="font-family:var(--sans);font-weight:700;font-size:31px;color:${lit?'#fff':'var(--soft)'}">${name}</span>
+    </div>`;
+  }).join('');
+  return `<div class="kicker">SIX SEATS · SIX FOCI</div>
+    <div class="h1" style="font-size:76px">六个座位</div>
+    <div style="position:absolute;left:86px;top:410px;width:908px;height:620px;opacity:.94">
+      <svg class="fig" width="908" height="620" viewBox="0 0 908 620">
+        ${ringsFigure(m,{op:.34,glow:false})}${seatsFigure(m,{on: reveal.length?reveal:null})}
+      </svg>
+    </div>
+    <div style="position:absolute;left:86px;top:1048px;width:908px">
+      <div style="font-family:var(--mono);font-size:23px;letter-spacing:.26em;color:var(--muted);margin-bottom:16px">
+        SEATS · CLOCKWISE FROM TOP
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">${chips}</div>
+    </div>
+    ${subLayer(4)}`;
+}
+
+function thunderPage(mode, src){
+  if(mode === 'plate'){
+    return `<img class="bgblur" src="${src}">
+      <div class="shade-top"></div>
+      <div class="kicker">ELECTRO PLATE · NO SEAT</div>
+      <div class="h1" style="font-size:72px">整块盘面</div>
+      ${shotImage(src, 470, 908)}
+      <div style="position:absolute;right:96px;bottom:1290px"><span class="pill">雷 · 不占座位</span></div>
+      ${subLayer(5)}`;
+  }
+  const box = {w:908, h:760};
+  const m = mapper(box, 60, 0, -2.2);
+  let s = ringsFigure(m,{op:.30,glow:false});
+  s += seatsFigure(m,{on:null});
+  const cx = m.X(0), cy = m.Y(0);
+  s += `<circle cx="${cx}" cy="${cy}" r="${m.s*1.45}" fill="rgba(105,87,194,.12)"
+        stroke="var(--thunder)" stroke-opacity=".85" stroke-dasharray="14 12" stroke-width="4"/>
+      <text x="${cx}" y="${cy+18}" text-anchor="middle" fill="var(--thunder)" fill-opacity=".95"
+        font-family="var(--sans)" font-size="${m.s*0.52}" font-weight="700">雷 ?</text>`;
+  if(mode === 'cross'){
+    const k = m.s*1.7;
+    s += `<g stroke="#FF4D4D" stroke-width="18" stroke-linecap="round" stroke-opacity=".95">
+      <line x1="${cx-k}" y1="${cy-k}" x2="${cx+k}" y2="${cy+k}"/>
+      <line x1="${cx+k}" y1="${cy-k}" x2="${cx-k}" y2="${cy+k}"/>
+    </g>`;
+  }
+  return `<div class="kicker">THUNDER · NO SEAT</div>
+    <div class="h1" style="font-size:80px">雷 不在中心</div>
+    <div style="position:absolute;left:86px;top:400px;width:908px;height:760px">
+      <svg class="fig" width="908" height="760" viewBox="0 0 908 760">${s}</svg>
+    </div>
+    <div style="position:absolute;left:96px;right:96px;top:1215px;text-align:center;
+         font-family:var(--sans);font-size:32px;color:var(--soft)">
+      六个座位都占满　·　中心没有第七个位置
+    </div>
+    ${subLayer(5)}`;
+}
+
+function shadowPage(lit){
+  const box = {w:908, h:880};
+  const m = mapper(box, 49, 0, 0.7);
+  return `<div class="kicker">FOUR SHADOWS · 4 ZONES</div>
+    <div class="h1" style="font-size:76px">四块交叠</div>
+    <div style="position:absolute;left:86px;top:410px;width:908px;height:880px">
+      <svg class="fig" width="908" height="880" viewBox="0 0 908 880">${shadowsFigure(m,{lit})}</svg>
+    </div>
+    <div style="position:absolute;left:86px;top:1318px;width:908px;display:flex;gap:14px;justify-content:center">
+      ${[['生','--sun'],['空','--star'],['死','--gold'],['时','--moon']].map(([t,c]) => {
+        const on = lit.indexOf(t) >= 0;
+        return `<div style="padding:10px 26px;border-radius:999px;background:rgba(5,7,12,.7);
+          border:1px solid ${on ? `var(${c})` : 'rgba(150,170,200,.22)'};
+          font-family:var(--sans);font-weight:700;font-size:33px;
+          color:${on ? `var(${c})` : 'var(--muted)'};opacity:${on ? 1 : .42}">${t}</div>`;
+      }).join('')}
+    </div>
+    ${subLayer(6)}`;
+}
+
+function calcPage(step){
+  const rows = [
+    { k:'3', label:'三条域圆', sub:'SUN / MOON / STAR',  css:'--star',    on: step>=1 },
+    { k:'4', label:'四块交叠', sub:'FOUR SHADOWS',       css:'--sun',     on: step>=2 },
+    { k:'7', label:'七个元素', sub:'SEVEN SEATS',        css:'--thunder', on: step>=3 }
+  ];
+  const list = rows.map(r => `<div style="display:flex;align-items:center;gap:26px;padding:16px 0;
+      opacity:${r.on?1:.14}">
+      <span style="font-family:var(--sans);font-weight:900;font-size:96px;color:var(${r.css});min-width:86px;
+        text-align:right;line-height:1">${r.k}</span>
+      <span style="width:3px;height:76px;background:var(${r.css});opacity:.8"></span>
+      <span style="flex:1">
+        <span style="display:block;font-family:var(--sans);font-weight:700;font-size:46px;color:#fff">${r.label}</span>
+        <span style="display:block;font-family:var(--mono);font-size:22px;letter-spacing:.20em;color:var(--muted);margin-top:6px">${r.sub}</span>
+      </span>
+    </div>`).join('');
+  const total = step >= 4;
+  return `<div class="kicker">THE NUMBER · 3 + 4 + 7</div>
+    <div class="h1" style="font-size:70px">三个数字，一套结构</div>
+    <div style="position:absolute;left:120px;top:452px;width:840px">${list}</div>
+    <div style="position:absolute;left:0;right:0;top:900px;text-align:center;opacity:${total?1:0}">
+      <div style="height:2px;width:320px;margin:0 auto 34px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+      <div style="font-family:var(--sans);font-weight:900;font-size:210px;color:var(--gold-soft);line-height:1;
+        text-shadow:0 0 90px rgba(232,201,122,.42)">= 14</div>
+      <div style="display:flex;gap:16px;justify-content:center;margin-top:30px">
+        ${SEATS.map(([name, cssVar]) =>
+          `<span style="display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.92">
+            ${elIconHTML(EL_KEY[name], 44, `var(${cssVar})`)}
+            <span style="font-family:var(--sans);font-size:20px;color:var(--soft)">${name}</span>
+          </span>`).join('')}
+        <span style="display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.92">
+          ${elIconHTML('thunder', 44, 'var(--thunder)')}
+          <span style="font-family:var(--sans);font-size:20px;color:var(--soft)">雷</span>
+        </span>
+      </div>
+      <div style="font-family:var(--sans);font-size:27px;letter-spacing:.06em;color:var(--soft);margin-top:18px">
+        7 光 + 4 影 + 2 界间 + 1 天理
+      </div>
+    </div>
+    ${subLayer(7,{gold:true})}`;
+}
+
+/* ---------- 3D 底片上的覆盖层（透明背景） ---------- */
+function oSeats(step){
+  const reveal = [ [], ['火'], ['火','风','冰'], ['火','风','冰','岩','水','草'] ][step];
+  const chips = SEATS.map(([name, cssVar]) => {
+    const lit = reveal.length ? reveal.indexOf(name) >= 0 : false;
+    return `<span style="display:flex;align-items:center;gap:9px;padding:9px 18px;border-radius:999px;
+      border:1px solid ${lit ? `var(${cssVar})` : 'rgba(150,170,200,.22)'};
+      background:rgba(5,7,12,.55);opacity:${lit ? 1 : .42}">
+      ${elIconHTML(EL_KEY[name], 24, `var(${cssVar})`)}
+      <span style="font-family:var(--sans);font-weight:700;font-size:30px;color:${lit?'#fff':'var(--soft)'}">${name}</span>
+    </span>`;
+  }).join('');
+  return `<div class="shade-top"></div>
+    <div class="kicker">SIX SEATS · SIX FOCI</div>
+    <div class="h1" style="font-size:76px">六个座位</div>
+    <div style="position:absolute;left:86px;right:86px;top:478px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center">${chips}</div>
+    <div class="shade-bot"></div>`;
+}
+Object.assign(PAGES, {
+  s06f(){
+    const box = {w: 908, h: 900};
+    const m = mapper(box, 53, 0, 0.55);
+    return `<div class="kicker">MAIN ELEMENTS · 3 MEETS 4</div>
+      <div class="h1" style="font-size:72px">三与四咬合</div>
+      <div style="position:absolute;left:86px;top:430px;width:908px;height:900px">
+        <svg class="fig" width="908" height="900" viewBox="0 0 908 900">${shadowMapping(m)}</svg>
+      </div>
+      <div style="position:absolute;left:96px;right:96px;top:1330px;text-align:center;
+           font-family:var(--sans);font-size:31px;color:var(--soft)">
+        圆心三元素 = 日 / 月 / 星　·　外圈三影 = 生 / 空 / 时
+      </div>
+      ${subLayer(6)}`;
+  },
+  o08a(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">WORLD FORMULA · 14 NODES</div>
+      <div class="h1" style="font-size:72px">世界式</div>
+      <div class="sub-h" style="font-size:32px">同一套几何，换成节点</div>
+      <div class="shade-bot"></div>`;
+  },
+  o08b(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">WORLD FORMULA · 14 NODES</div>
+      <div class="h1" style="font-size:72px">世界式</div>
+      <div class="sub-h" style="font-size:32px">同一套几何，换成节点</div>
+      <div style="position:absolute;left:86px;right:86px;top:1430px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        ${[['7', '光', '--star'], ['4', '影', '--sun'], ['2', '界间', '--thunder'], ['1', '天理', '--gold']].map(([n, t, c]) =>
+          `<span style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+            border:1px solid var(${c});background:rgba(5,7,12,.62)">
+            <span style="font-family:var(--sans);font-weight:900;font-size:30px;color:var(${c})">${n}</span>
+            <span style="font-family:var(--sans);font-size:24px;color:var(--soft)">${t}</span></span>`).join('')}
+        <span style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+          border:1px solid var(--gold);background:rgba(232,201,122,.12)">
+          <span style="font-family:var(--sans);font-weight:900;font-size:30px;color:var(--gold-soft)">= 14</span></span>
+      </div>
+      <div class="shade-bot"></div>`;
+  },
+  o08c(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">WORLD FORMULA · 14 NODES</div>
+      <div class="h1" style="font-size:72px">世界式</div>
+      <div class="sub-h" style="font-size:32px">同一套几何，换成节点</div>
+      <div style="position:absolute;left:96px;top:470px"><span class="pill">雷在中央 · 中央那块是死</span></div>
+      <div style="position:absolute;left:86px;right:86px;top:1430px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        ${[['7', '光', '--star'], ['4', '影', '--sun'], ['2', '界间', '--thunder'], ['1', '天理', '--gold']].map(([n, t, c]) =>
+          `<span style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+            border:1px solid var(${c});background:rgba(5,7,12,.62)">
+            <span style="font-family:var(--sans);font-weight:900;font-size:30px;color:var(${c})">${n}</span>
+            <span style="font-family:var(--sans);font-size:24px;color:var(--soft)">${t}</span></span>`).join('')}
+      </div>
+      <div class="shade-bot"></div>`;
+  },
+  o08d(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">WORLD FORMULA · 14 NODES</div>
+      <div class="h1" style="font-size:72px">世界式</div>
+      <div style="position:absolute;left:0;right:0;top:408px;height:576px;background:linear-gradient(to bottom,
+        rgba(5,7,12,0) 0%,rgba(5,7,12,.93) 20%,rgba(5,7,12,.93) 76%,rgba(5,7,12,0) 100%)"></div>
+      <div style="position:absolute;left:96px;right:96px;top:466px;text-align:left">
+        <div style="font-family:var(--sans);font-weight:900;font-size:66px;line-height:1.26;color:var(--gold-soft);
+          text-shadow:0 4px 24px rgba(0,0,0,.9)">3 · 4 · 7<br>不是三件事，<br>是一张图的三个层</div>
+      </div>
+      <div style="position:absolute;right:96px;top:232px;padding:8px 16px;border-radius:999px;
+        border:1px solid rgba(232,201,122,.32);background:rgba(5,7,12,.72);
+        font-family:var(--mono);font-size:21px;letter-spacing:.14em;color:rgba(232,201,122,.92)">AI 配音 · 3D 实时渲染</div>
+      <div class="shade-bot"></div>`;
+  },
+  s10a(){
+    const dots = Array.from({ length: 14 }, (_, i) => {
+      const last = i === 13;
+      return `<span style="display:flex;flex-direction:column;align-items:center;gap:12px;width:22px">
+        <span style="width:${last ? 20 : 13}px;height:${last ? 20 : 13}px;border-radius:50%;
+          background:${last ? 'var(--gold)' : 'rgba(150,170,200,.38)'};
+          box-shadow:${last ? '0 0 22px rgba(232,201,122,.9)' : 'none'}"></span>
+        <span style="font-family:var(--sans);font-size:21px;color:var(--gold-soft);white-space:nowrap">
+          ${last ? '终焉' : ''}</span>
+      </span>`;
+    }).join('');
+    return `<div class="kicker">HONKAI · 14 HERRSCHERS</div>
+      <div class="h1" style="font-size:76px">十四</div>
+      <div style="position:absolute;left:0;right:0;top:404px;text-align:center">
+        <div style="font-family:var(--sans);font-weight:900;font-size:286px;line-height:.9;color:var(--gold-soft);
+          text-shadow:0 0 130px rgba(232,201,122,.44)">14</div>
+        <div style="margin-top:34px;font-family:var(--sans);font-size:38px;color:#fff;letter-spacing:.05em">
+          崩坏系列　每个文明循环的律者
+        </div>
+      </div>
+      <div style="position:absolute;left:96px;right:96px;top:1006px;display:flex;gap:12px;
+           align-items:flex-start;justify-content:center">${dots}</div>
+      <div style="position:absolute;left:96px;right:96px;top:1140px;height:2px;
+           background:linear-gradient(90deg,transparent,rgba(232,201,122,.45),transparent)"></div>
+      <div style="position:absolute;left:96px;right:96px;top:1190px;text-align:center;
+           font-family:var(--sans);font-size:33px;letter-spacing:.04em;color:var(--soft)">
+        3 + 4 + 7 = 14　·　同一套结构
+      </div>
+      ${subLayer(9)}`;
+  },
+  o02(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">SUN / MOON / STAR · 3 CIRCLES</div>
+      <div class="h1">三个圆</div>
+      <div class="sub-h">日 · 月 · 星　三域</div>
+      <div class="shade-bot"></div>`;
+  },
+  o04a(){ return oSeats(0); },
+  o04b(){ return oSeats(1); },
+  o04c(){ return oSeats(2); },
+  o04d(){ return oSeats(3); },
+  o05(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">ELECTRO PLATE · NO SEAT</div>
+      <div class="h1" style="font-size:76px">整块盘面</div>
+      <div style="position:absolute;left:96px;top:430px"><span class="pill">雷 · 不占座位</span></div>
+      <div class="shade-bot"></div>`;
+  },
+  o09a(){
+    return `<div class="shade-top"></div>
+      <div class="kicker">THE READING</div>
+      <div class="h1" style="font-size:76px">这是读法，不是设定</div>
+      <div style="position:absolute;left:96px;top:430px"><span class="pill">非官方设定 · 个人读法</span></div>
+      <div class="shade-bot"></div>`;
+  },
+  o09b(){
+    return `<div class="shade-top" style="height:360px"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:560px;
+        background:linear-gradient(to top,rgba(5,7,12,.86) 6%,rgba(5,7,12,.42) 48%,rgba(5,7,12,0))"></div>
+      <div class="foot">AI 配音 · kenneykun.github.io/genshin347puzzle</div>`;
+  }
+});
+
+/* ---------- 渲染 ---------- */
+const stage = document.getElementById('stage');
+const id = (location.hash || '').replace('#','') || 's01a';
+
+function transparent(){
+  stage.classList.add('trans');
+  document.documentElement.style.background = 'transparent';
+  document.body.style.background = 'transparent';
+}
+
+function subPage(n){
+  transparent();
+  const shot = CFG.shots[n-1];
+  const lines = shot.subtitle.map(t => `<div class="ln">${t}</div>`).join('');
+  stage.innerHTML = `<div class="shade-bot" style="background:linear-gradient(to top,rgba(0,0,0,.86) 4%,rgba(0,0,0,.55) 46%,rgba(0,0,0,0))"></div>
+    <div class="sub" style="bottom:290px">${lines}</div>`;
+  return Promise.resolve();
+}
+
+const KEYWORDS = ['雷', '死', '十四', '主元素', '终焉', '律者', '14'];
+
+function escapeHTML(t){
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlight(text){
+  let out = escapeHTML(text);
+  for (const kw of KEYWORDS) {
+    out = out.split(escapeHTML(kw)).join(`<span class="kw">${escapeHTML(kw)}</span>`);
+  }
+  return out;
+}
+
+function capPage(cid){
+  transparent();
+  const text = CAPS[cid] || '';
+  stage.innerHTML = `<div class="cap"><div class="capinner">${highlight(text)}</div></div>`;
+  return Promise.resolve();
+}
+
+function render(){
+  if(/^c\d+$/.test(id)) return capPage(id);
+  if(/^sub\d+$/.test(id)) return subPage(+id.slice(3));
+  if(/^o\d/.test(id)) transparent();
+  const fn = PAGES[id];
+  if(!fn){ stage.innerHTML = `<div style="color:#f66;font:32px monospace;padding:40px">unknown page ${id}</div>`; return Promise.resolve(); }
+  stage.innerHTML = fn();
+  const imgs = Array.from(stage.querySelectorAll('img'));
+  return Promise.all(imgs.map(im => im.decode ? im.decode().catch(()=>{}) : Promise.resolve()))
+    .then(() => document.fonts ? document.fonts.ready : Promise.resolve());
+}
+
+render().then(() => { document.documentElement.dataset.ready = '1'; })
+        .catch(e => { document.documentElement.dataset.ready = 'err:' + e.message; });
+</script>
+</body>
+</html>

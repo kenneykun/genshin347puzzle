@@ -1,0 +1,375 @@
+{
+  "video": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "renderScale": 2
+  },
+  "safe": {
+    "x": 0.08,
+    "top": 0.12,
+    "bottom": 0.12
+  },
+  "audio": {
+    "voiceRmsDb": -17.0,
+    "voicePeakDb": -1.5,
+    "bgmRelativeDb": -24.0,
+    "bgmLiftDb": 3.0,
+    "bgmLiftFromShot": 7,
+    "fadeOut": 1.1,
+    "bgm": "none",
+    "sfx": false,
+    "note": "bgm=none / sfx=false：成片只保留人声，配乐在抖音 App 内添加"
+  },
+  "shots": [
+    {
+      "id": 1,
+      "slug": "hook",
+      "subtitle": [
+        "3 · 4 · 7 ｜ 同一套结构"
+      ],
+      "narration": "3、4、7 这三个数，装的其实是同一套结构。",
+      "states": [
+        "s01a",
+        "s01b"
+      ],
+      "weights": [
+        0.35,
+        0.65
+      ],
+      "xfade": 0.28,
+      "minDur": 3.2,
+      "tail": 0.3,
+      "kenburns": {
+        "z0": 1.02,
+        "z1": 1.06,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": [
+        {
+          "type": "whoosh",
+          "at": 0.0,
+          "db": -18
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "three-circles",
+      "subtitle": [
+        "三个圆 = 日 / 月 / 星"
+      ],
+      "narration": "先看这三个圆。／日、月、星，三个域。／圆心连起来，是一个正三角形。",
+      "clip": "pan",
+      "clipOffset": 0,
+      "states": [
+        "o02"
+      ],
+      "weights": [
+        1.0
+      ],
+      "xfade": 0.0,
+      "minDur": 4.5,
+      "tail": 0.45,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.025,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": []
+    },
+    {
+      "id": 3,
+      "slug": "geometry",
+      "subtitle": [
+        "每个圆的圆心，都落在另外两个圆上"
+      ],
+      "narration": "每个圆的圆心，都落在另外两个圆上。／半径等于边长，图才闭合。",
+      "states": [
+        "s03a",
+        "s03b"
+      ],
+      "weights": [
+        0.34,
+        0.66
+      ],
+      "xfade": 0.3,
+      "minDur": 4.2,
+      "tail": 0.4,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.045,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": [
+        {
+          "type": "ping",
+          "at": 0.52,
+          "db": -18
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "seats",
+      "subtitle": [
+        "六个元素，坐在六个交点上"
+      ],
+      "narration": "三个圆两两相交，得到六个交点。／六个元素，正好一人一个座位。／火在正上，顺时针排下来。",
+      "clip": "seat",
+      "clipOffset": 0,
+      "states": [
+        "o04a",
+        "o04b",
+        "o04c",
+        "o04d"
+      ],
+      "weights": [
+        0.24,
+        0.24,
+        0.24,
+        0.28
+      ],
+      "xfade": 0.18,
+      "minDur": 5.0,
+      "tail": 0.45,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.02,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": []
+    },
+    {
+      "id": 5,
+      "slug": "thunder",
+      "subtitle": [
+        "雷没有座位",
+        "它能和任何元素反应"
+      ],
+      "narration": "那雷呢？／雷没有座位。／因为它能和任何元素反应——它不是第七个点，它是整块盘面本身。",
+      "states": [
+        {
+          "page": "s05a"
+        },
+        {
+          "page": "s05b"
+        },
+        {
+          "clip": "plate",
+          "offset": 20,
+          "overlay": "o05"
+        },
+        {
+          "clip": "plate",
+          "offset": 110,
+          "overlay": "o05"
+        }
+      ],
+      "weights": [
+        0.2,
+        0.2,
+        0.3,
+        0.3
+      ],
+      "xfade": 0.14,
+      "minDur": 5.5,
+      "tail": 0.45,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.04,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": [
+        {
+          "type": "strike",
+          "at": 0.38,
+          "db": -17
+        },
+        {
+          "type": "crackle",
+          "at": 0.56,
+          "db": -18
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "main-elements",
+      "subtitle": [
+        "圆心上的火水冰 = 日月星的主元素",
+        "外圈草风岩 = 生 · 空 · 时"
+      ],
+      "narration": "三个圆心就是火、水、冰——日月星的主元素。／草、风、岩在外圈，正对生、空、时。／雷和死，都在中央。",
+      "states": [
+        "s06a",
+        "s06b",
+        "s06c",
+        "s06d",
+        "s06e",
+        "s06f"
+      ],
+      "weights": [
+        0.11,
+        0.14,
+        0.14,
+        0.14,
+        0.17,
+        0.3
+      ],
+      "xfade": 0.16,
+      "minDur": 6.0,
+      "tail": 0.45,
+      "kenburns": {
+        "z0": 1.03,
+        "z1": 1.0,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": []
+    },
+    {
+      "id": 7,
+      "slug": "fourteen",
+      "subtitle": [
+        "3 + 4 + 7 = 14"
+      ],
+      "narration": "三条圆，四块交叠，七个元素。／三加四加七，正好十四。",
+      "states": [
+        "s07a",
+        "s07b",
+        "s07c",
+        "s07d"
+      ],
+      "weights": [
+        0.2,
+        0.22,
+        0.22,
+        0.36
+      ],
+      "xfade": 0.13,
+      "minDur": 4.5,
+      "tail": 0.55,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.03,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": [
+        {
+          "type": "impact",
+          "at": 0.66,
+          "db": -14
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "world-formula",
+      "subtitle": [
+        "七光 + 四影 + 两界间 + 一天理 = 14"
+      ],
+      "narration": "同一套几何换成节点，就是世界式。／七光、四影、两界间、一天理——十四。／三个圆还在，六个交点还在，雷和死也还在中央。",
+      "clip": "wf",
+      "clipOffset": 0,
+      "states": [
+        "o08a",
+        "o08b",
+        "o08c"
+      ],
+      "weights": [
+        0.3,
+        0.35,
+        0.35
+      ],
+      "xfade": 0.34,
+      "minDur": 8.0,
+      "tail": 0.45,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.02,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": []
+    },
+    {
+      "id": 9,
+      "slug": "fourteen-honkai",
+      "subtitle": [
+        "十四 = 崩坏系列的律者数量"
+      ],
+      "narration": "3、4、7 不是三件事，是一张图的三个层。／而十四，崩坏系列里是每个文明循环的律者数。",
+      "states": [
+        "s10a"
+      ],
+      "weights": [
+        1.0
+      ],
+      "xfade": 0.0,
+      "minDur": 6.0,
+      "tail": 0.9,
+      "kenburns": {
+        "z0": 1.0,
+        "z1": 1.035,
+        "pan": [
+          0,
+          0
+        ]
+      },
+      "sfx": [
+        {
+          "type": "impact",
+          "at": 0.3,
+          "db": -15
+        }
+      ],
+      "captions": false
+    }
+  ],
+  "publish": {
+    "titles": [
+      "原神反复出现的 3、4、7，其实是同一套结构",
+      "雷为什么不在中心？因为整块盘都是它",
+      "日、月、星三个圆，四块交叠，七个元素——正好十四"
+    ],
+    "topics": [
+      "#原神",
+      "#原神考据",
+      "#提瓦特",
+      "#游戏设定",
+      "#视觉笔记"
+    ]
+  },
+  "voice": {
+    "engine": "edge",
+    "name": "zh-CN-XiaoxiaoNeural",
+    "rate": "+8%",
+    "pitch": "+0Hz",
+    "meloSpeed": 1.15,
+    "device": "cuda:0",
+    "polish": true
+  }
+}

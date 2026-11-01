@@ -1,0 +1,16 @@
+# 视频管线产物（体积大，按 video/README.md 重新生成）
+video/build/
+video/out/*.mp4
+video/out/*.png
+video/out/*.pdf
+video/out/*.wav
+video/out/voice-samples/
+video/assets/
+video/slides.html
+video/__pycache__/
+__pycache__/
+work/
+
+# 系统文件
+.DS_Store
+Thumbs.db

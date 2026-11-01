@@ -113,6 +113,27 @@
 
 
 
+## 抖音成片（v1.0.0 封版）
+
+`video/` 是把上图的读法做成 **9 镜竖屏视频**的完整管线（1080×1920 / 30fps / 约 78 秒 / 纯人声音轨 + 抖音式逐句大字幕）：
+
+| 阶段 | 做什么 | 入口 |
+|---|---|---|
+| 版式 | 单文件 HTML 画每一镜（含 3D 底片叠加层、透明字幕层） | `video/slides.tpl.html` |
+| 采样 | CDP 抓站点 3D 底片与透明图层 | `video/capture_clips.mjs` / `video/capture_wf.mjs` |
+| 配音 | 中文女声 + 广播级后处理（可选本地 MeloTTS） | `video/tts.py` / `video/voice_lab.py` |
+| 合成 | 逐帧合成 + ffmpeg 编码 + 抖动 | `video/render.py` |
+| 交付 | 封面 / 分镜 PDF / 发布配置 | `video/deliver.py` |
+
+一键：`pwsh video/build.ps1`。
+
+- 逐镜脚本、旁白、时长、风险表：`plan/douyin_video_plan.md`
+- 发布配置（标题 / 话题 / 简介 / 自查清单）：`video/out/publish.md`
+- 逐句字幕时间轴：`video/out/subtitles.srt`
+
+**不入库的产物**：`video/build/`（抓帧与中间层，数百 MB）、成片 MP4、封面、分镜 PDF、试听样音、`video/assets/`（站点截图与官方元素图标）。
+元素图标取自游戏内卡牌 UI，属米哈游素材的同人使用，因此仓库只保留抓取脚本 `video/fetch_element_icons.py`，不转存原图。
+
 ## License
 
 内容与代码仅供个人研究与展示。
